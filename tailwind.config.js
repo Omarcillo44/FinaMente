@@ -5,7 +5,11 @@ export default {
     "./src/**/*.{js,jsx,ts,tsx}", // <-- ESTA LÍNEA ES VITAL
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        pixel: ['BoldPixel', 'sans-serif'],
+      }
+    },
   },
   plugins: [],
 }

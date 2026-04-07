@@ -59,7 +59,7 @@ export default function App() {
   const currentIndex = DEMO_SCENES.indexOf(escenaActual);
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-black text-white font-sans select-none touch-none">
+    <div className="w-full h-full relative overflow-hidden bg-black text-white font-pixel select-none touch-none">
       
       {/* Contenedor Principal (Donde se dibuja cada vista) */}
       <div className="w-full h-full">
@@ -71,20 +71,20 @@ export default function App() {
         <button 
           onClick={irEscenaAnterior}
           disabled={currentIndex === 0}
-          className={`px-4 py-2 bg-blue-600 border border-blue-400 text-white rounded-lg shadow-xl font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed`}
+          className={`px-4 py-2 bg-blue-600 border border-blue-400 text-white rounded-lg shadow-xl font-pixel text-sm disabled:opacity-30 disabled:cursor-not-allowed`}
         >
           ← Atrás
         </button>
         <button 
           onClick={irSiguienteEscena}
           disabled={currentIndex === DEMO_SCENES.length - 1}
-          className={`px-4 py-2 bg-blue-600 border border-blue-400 text-white rounded-lg shadow-xl font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed`}
+          className={`px-4 py-2 bg-blue-600 border border-blue-400 text-white rounded-lg shadow-xl font-pixel text-sm disabled:opacity-30 disabled:cursor-not-allowed`}
         >
           Adelante →
         </button>
       </div>
       
-      <div className="fixed bottom-4 left-4 z-[9999] px-2 py-1 bg-black text-white text-xs rounded border border-gray-700 pointer-events-none">
+      <div className="fixed bottom-4 left-4 z-[9999] px-2 py-1 bg-black text-white text-xs rounded font-pixel border border-gray-700 pointer-events-none">
         Escena: {escenaActual} ({currentIndex + 1}/{DEMO_SCENES.length})
       </div>
     

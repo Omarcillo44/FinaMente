@@ -56,11 +56,11 @@ export default function MapaView() {
       {/* Contenedor del Hub/UI Superior */}
       <div className="absolute top-0 left-0 w-full p-4 z-10 pointer-events-none flex justify-between items-start">
         <div className="bg-white/80 backdrop-blur px-4 py-2 rounded-xl shadow-sm border border-slate-200 pointer-events-auto">
-          <p className="text-xs font-bold text-slate-500">Zona actual</p>
-          <p className="text-lg font-bold text-slate-800">Centro Financiero</p>
+          <p className="text-xs font-pixel text-slate-500">Zona actual</p>
+          <p className="text-lg font-pixel text-slate-800">Centro Financiero</p>
         </div>
         <div className="bg-emerald-500/90 text-white px-4 py-2 rounded-xl shadow-sm pointer-events-auto">
-          <p className="text-sm font-bold">$2,450.00</p>
+          <p className="text-sm font-pixel">$2,450.00</p>
         </div>
       </div>
 
