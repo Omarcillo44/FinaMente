@@ -34,7 +34,7 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
       undefined,
       (err) => {
         // Fallback genérico a pixil-frame-0.png si no se encuentra
-        textureLoader.load('/sprites/empleado/pixil-frame-0.png', (fallback) => {
+        textureLoader.load(`${import.meta.env.BASE_URL}sprites/empleado/pixil-frame-0.png`, (fallback) => {
           fallback.magFilter = THREE.NearestFilter;
           fallback.minFilter = THREE.NearestFilter;
           if (materialRef.current) materialRef.current.map = fallback;
@@ -111,7 +111,7 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
       animState.current.timeAccumulator += delta;
       if (animState.current.timeAccumulator >= 0.15) {
         animState.current.timeAccumulator = 0;
-        animState.current.frame = (animState.current.frame + 1) % 6; 
+        animState.current.frame = (animState.current.frame + 1) % 6;
       }
     } else {
       animState.current.frame = 0;
@@ -125,8 +125,8 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
     if (isFrameChanged || isStateChanged) {
       // Intenta cargar la textura con la estructura que definimos
       const textureUrl = isMoving
-        ? `/sprites/empleado/${currentDir}/${currentDir}-${currentFrame}.png`
-        : `/sprites/empleado/${currentDir}-0.png`;
+        ? `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}/${currentDir}-${currentFrame}.png`
+        : `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}-0.png`;
 
       applyTexture(textureUrl);
     }
@@ -134,7 +134,7 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
 
   useEffect(() => {
     // Para asegurarnos de que aparezca, forzamos que al iniciar busque down-0.png (o fallback)
-    applyTexture(`/sprites/empleado/down-0.png`);
+    applyTexture(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
