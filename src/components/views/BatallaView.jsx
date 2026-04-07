@@ -2,7 +2,8 @@ import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 
-const URL_ESCENARIO = '/models/Escenario_Escuela.glb';
+// const URL_ESCENARIO = '/models/Escenario_Escuela.glb';
+const URL_ESCENARIO = `${import.meta.env.BASE_URL}models/Escenario_Escuela.glb`;
 
 function EscenarioEscuelaModel() {
   // 2. El Hook carga el modelo usando la variable

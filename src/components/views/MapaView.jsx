@@ -3,7 +3,8 @@ import { Canvas } from '@react-three/fiber';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 import PersonajeController from './PersonajeController';
 
-const URL_MAPA ='/models/Mapa.glb';
+// const URL_MAPA ='/models/Mapa.glb';
+const URL_MAPA = `${import.meta.env.BASE_URL}models/Mapa.glb`;
 
 function MapaModel() {
   const { scene } = useGLTF(URL_MAPA);
