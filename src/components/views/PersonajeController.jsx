@@ -5,14 +5,14 @@ import * as THREE from 'three';
 export default function PersonajeController({ position = [0, 1, 0], inputs }) {
   const personajeRef = useRef();
   const materialRef = useRef();
-  const { camera, controls } = useThree(); // Obtenemos controls de R3F para no pelear con la camara
+  const { camera } = useThree(); // Quitamos "controls" porque vamos a forzar una cámara rígida
 
   // Posición interna calculada en el bucle
   const posRef = useRef(new THREE.Vector3(...position));
 
   // Aumenté el tamaño del personaje temporalmente para asegurarme de que lo veas
-  const SIZE = 4;
-  const MOVE_SPEED = 5.0;
+  const SIZE = 6;
+  const MOVE_SPEED = 8.0;
 
   const animState = useRef({
     direccion: 'down',
@@ -84,17 +84,15 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
       // Billboarding estricto: El personaje siempre estará de cara a la cámara
       personajeRef.current.quaternion.copy(camera.quaternion);
     }
-    // Esto hace que OrbitControls automáticamente desplace la cámara preservando la rotación y zoom.
-    if (controls) {
-      // Ajustamos la altura de visión (target) un poquito arriba de los pies del personaje
-      const targetLook = posRef.current.clone().add(new THREE.Vector3(0, SIZE / 2, 0));
-      controls.target.lerp(targetLook, 0.1);
-    } else {
-      // Si por alguna razón no está OrbitControls, hacemos el lerp tradicional
-      const cameraOffset = new THREE.Vector3(0, 5, 10);
-      const targetCameraPos = posRef.current.clone().add(cameraOffset);
-      camera.position.lerp(targetCameraPos, 0.1);
-    }
+    // Lógica RIGIDA de seguimiento para la cámara (Estilo Pokemon/Zelda)
+    // Fijamos un offset específico estricto para que la camara NUNCA varíe su ángulo.
+    const cameraOffset = new THREE.Vector3(0, 8, 12);
+    const targetCameraPos = posRef.current.clone().add(cameraOffset);
+
+    // Suavizado hacia la nueva posicion de la camara
+    camera.position.lerp(targetCameraPos, 0.1);
+    // Forzamos a la camara a mirar siempre paralelamente al mismo punto (jugador)
+    camera.lookAt(posRef.current.clone().add(new THREE.Vector3(0, 1, 0)));
 
     // 3. Lógica de Animación
     const prevDir = animState.current.direccion;
