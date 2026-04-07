@@ -34,7 +34,7 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
       undefined,
       (err) => {
         // Fallback genérico a pixil-frame-0.png si no se encuentra
-        textureLoader.load(`${import.meta.env.BASE_URL}sprites/empleado/pixil-frame-0.png`, (fallback) => {
+        textureLoader.load(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`, (fallback) => {
           fallback.magFilter = THREE.NearestFilter;
           fallback.minFilter = THREE.NearestFilter;
           if (materialRef.current) materialRef.current.map = fallback;
