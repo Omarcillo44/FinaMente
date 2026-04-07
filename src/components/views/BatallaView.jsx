@@ -2,12 +2,11 @@ import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 
-// 1. Guardas el link de tu Release aquí (Nota la extensión .glb)
-const URL_ESCENARIO_RELEASE = 'https://github.com/Omarcillo44/FinaMente/releases/download/modelos3D/Escenario_Escuela.gltf';
+const URL_ESCENARIO = '/models/Escenario_Escuela.glb';
 
 function EscenarioEscuelaModel() {
   // 2. El Hook carga el modelo usando la variable
-  const { scene } = useGLTF(URL_ESCENARIO_RELEASE);
+  const { scene } = useGLTF(URL_ESCENARIO);
   return <primitive object={scene} scale={1} />;
 }
 
@@ -66,4 +65,4 @@ export default function BatallaView() {
 }
 
 // 3. Precargas EXACTAMENTE la misma variable aquí abajo para evitar errores 404
-useGLTF.preload(URL_ESCENARIO_RELEASE);
+useGLTF.preload(URL_ESCENARIO);

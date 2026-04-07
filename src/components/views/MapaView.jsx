@@ -3,10 +3,10 @@ import { Canvas } from '@react-three/fiber';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 import PersonajeController from './PersonajeController';
 
-const URL_MAPA_RELEASE ='https://github.com/Omarcillo44/FinaMente/releases/download/modelos3D/Mapa.gltf';
+const URL_MAPA ='/models/Mapa.glb';
 
 function MapaModel() {
-  const { scene } = useGLTF(URL_MAPA_RELEASE);
+  const { scene } = useGLTF(URL_MAPA);
   return <primitive object={scene} scale={1} />;
 }
 
@@ -132,4 +132,4 @@ export default function MapaView() {
 }
 
 // Para precargar el modelo asíncronamente
-useGLTF.preload(URL_MAPA_RELEASE);
+useGLTF.preload(URL_MAPA);
