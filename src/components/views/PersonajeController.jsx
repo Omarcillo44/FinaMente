@@ -84,9 +84,6 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
       // Billboarding estricto: El personaje siempre estará de cara a la cámara
       personajeRef.current.quaternion.copy(camera.quaternion);
     }
-
-    // EL TRUCO PARA EVITAR EL BUG DE ORBIT CONTROLS:
-    // Movemos el 'target' (el punto que mira la cámara) suavemente hacia la posición del jugador.
     // Esto hace que OrbitControls automáticamente desplace la cámara preservando la rotación y zoom.
     if (controls) {
       // Ajustamos la altura de visión (target) un poquito arriba de los pies del personaje

@@ -2,7 +2,7 @@
 
 // Al crearlo aquí, se instancia una sola vez cuando la app carga, 
 // pero NO suena hasta que llamemos a play()
-const musicaFondo = new Audio('/song/Legend_of_the_Keep.mp3');
+const musicaFondo = new Audio(`${import.meta.env.BASE_URL}song/Legend_of_the_Keep.mp3`);
 
 // Configuraciones críticas
 musicaFondo.loop = true;  // Para que se repita infinitamente
