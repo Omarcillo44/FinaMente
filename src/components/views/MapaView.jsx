@@ -2,6 +2,7 @@ import React, { Suspense, useState, useCallback, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 import PersonajeController from './PersonajeController';
+import Joystick from './Joystick';
 
 // const URL_MAPA ='/models/Mapa.glb';
 const URL_MAPA = `${import.meta.env.BASE_URL}models/Mapa.glb`;
@@ -63,42 +64,19 @@ export default function MapaView() {
         </div>
       </div>
 
-      {/* D-PAD / Controles de Movimiento - Botones Laterales Inferiores */}
-      <div className="absolute bottom-10 right-10 z-10 pointer-events-auto flex flex-col items-center select-none">
-        {/* Botón Arriba */}
-        <button
-          className={`w-14 h-14 bg-slate-800/80 text-white font-bold rounded-xl shadow-lg mb-2 flex items-center justify-center transition-all ${inputs.up ? 'scale-90 bg-slate-600' : ''}`}
-          onMouseDown={() => handleDown('up')} onMouseUp={() => handleUp('up')} onMouseLeave={() => handleUp('up')}
-          onTouchStart={() => handleDown('up')} onTouchEnd={() => handleUp('up')}
-        >
-          W
-        </button>
-        <div className="flex gap-2">
-          {/* Botón Izquierda */}
-          <button
-            className={`w-14 h-14 bg-slate-800/80 text-white font-bold rounded-xl shadow-lg flex items-center justify-center transition-all ${inputs.left ? 'scale-90 bg-slate-600' : ''}`}
-            onMouseDown={() => handleDown('left')} onMouseUp={() => handleUp('left')} onMouseLeave={() => handleUp('left')}
-            onTouchStart={() => handleDown('left')} onTouchEnd={() => handleUp('left')}
-          >
-            A
-          </button>
-          {/* Botón Abajo */}
-          <button
-            className={`w-14 h-14 bg-slate-800/80 text-white font-bold rounded-xl shadow-lg flex items-center justify-center transition-all ${inputs.down ? 'scale-90 bg-slate-600' : ''}`}
-            onMouseDown={() => handleDown('down')} onMouseUp={() => handleUp('down')} onMouseLeave={() => handleUp('down')}
-            onTouchStart={() => handleDown('down')} onTouchEnd={() => handleUp('down')}
-          >
-            S
-          </button>
-          {/* Botón Derecha */}
-          <button
-            className={`w-14 h-14 bg-slate-800/80 text-white font-bold rounded-xl shadow-lg flex items-center justify-center transition-all ${inputs.right ? 'scale-90 bg-slate-600' : ''}`}
-            onMouseDown={() => handleDown('right')} onMouseUp={() => handleUp('right')} onMouseLeave={() => handleUp('right')}
-            onTouchStart={() => handleDown('right')} onTouchEnd={() => handleUp('right')}
-          >
-            D
-          </button>
-        </div>
+      {/* Controles de Movimiento - Joystick */}
+      <div className="absolute bottom-10 right-10 z-10 pointer-events-auto select-none opacity-80 hover:opacity-100 transition-opacity">
+        <Joystick 
+          onChange={({ x, y }) => {
+            setInputs(prev => ({
+              ...prev,
+              up: y < -0.3,
+              down: y > 0.3,
+              left: x < -0.3,
+              right: x > 0.3
+            }));
+          }} 
+        />
       </div>
 
       {/* Renderizado 3D */}
