@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore, DEMO_SCENES } from './store/gameStore';
+import { iniciarMusicaGlobal } from './core/AudioGlobal';
 
 // Vistas
 import InicioView from './components/views/InicioView';
@@ -15,6 +16,29 @@ import GameOverView from './components/views/GameOverView';
 
 export default function App() {
   const { escenaActual, irSiguienteEscena, irEscenaAnterior } = useGameStore();
+
+  useEffect(() => {
+    // Intentar reproducir música de fondo en cuanto la página se abre.
+    // Nota: Los navegadores modernos bloquean el audio automático hasta que el
+    // usuario interactúa con la pantalla (política de AutoPlay).
+    iniciarMusicaGlobal();
+
+    // Agregamos un fallback: al primer clic o pulsación de tecla, forzamos que inicie por si lo bloqueó.
+    const iniciarConInteraccion = () => {
+      iniciarMusicaGlobal();
+      // Removemos el evento para que no se siga llamando
+      window.removeEventListener('click', iniciarConInteraccion);
+      window.removeEventListener('keydown', iniciarConInteraccion);
+    };
+
+    window.addEventListener('click', iniciarConInteraccion);
+    window.addEventListener('keydown', iniciarConInteraccion);
+
+    return () => {
+      window.removeEventListener('click', iniciarConInteraccion);
+      window.removeEventListener('keydown', iniciarConInteraccion);
+    };
+  }, []);
 
   const renderScene = () => {
     switch (escenaActual) {

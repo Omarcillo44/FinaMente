@@ -1,5 +1,5 @@
 import React from 'react';
-import { iniciarMusicaGlobal } from '../core/AudioGlobal';
+import { iniciarMusicaGlobal } from '../../core/AudioGlobal';
 
 export default function InicioView() {
 
