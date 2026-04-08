@@ -5,18 +5,19 @@ import { useGameStore } from '../../store/gameStore';
 
 export const ZONAS_MAPA = {
   // Configuración de hitbox (x, z, radius)
-  'Escuela': { x: 100, z: 100, r: 15 },
-  'Supermercado': { x: -80, z: -50, r: 15 },
-  'Banco': { x: 80, z: -80, r: 15 },
-  'Casa': { x: 0, z: 0, r: 15 },
-  'Trabajo': { x: -50, z: 100, r: 15 },
-  'Hospital': { x: 50, z: 50, r: 15 }
+  'ESCUELA': { x: 50, z: 50, r: 15 },
+  'SUPERMERCADO': { x: 179, z: 123, r: 15 },
+  'CASA': { x: 131, z: 121, r: 15 },
+  'OFICINA': { x: 103, z: 48, r: 15 },
+  'CONSULTORIO': { x: 175, z: 56, r: 15 },
+  'TRANSPORTE': { x: 125, z: 64, r: 15 },
+  'CENTRO_COMERCIAL': { x: 46, z: 126, r: 15 }
 };
 
 export default function PersonajeController({ position = [0, 1, 0], inputs, activas = [], onCollision, zonaBloqueada, onZonalibear }) {
   const personajeRef = useRef();
   const materialRef = useRef();
-  const { camera } = useThree(); 
+  const { camera } = useThree();
 
   const posRef = useRef(new THREE.Vector3(...position));
 
@@ -34,16 +35,16 @@ export default function PersonajeController({ position = [0, 1, 0], inputs, acti
 
   const applyTexture = (url) => {
     textureLoader.load(url, (tex) => {
-        tex.magFilter = THREE.NearestFilter;
-        tex.minFilter = THREE.NearestFilter;
-        if (materialRef.current) materialRef.current.map = tex;
-      }, undefined, (err) => {
-        textureLoader.load(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`, (fallback) => {
-          fallback.magFilter = THREE.NearestFilter;
-          fallback.minFilter = THREE.NearestFilter;
-          if (materialRef.current) materialRef.current.map = fallback;
-        }, undefined, () => { });
-      }
+      tex.magFilter = THREE.NearestFilter;
+      tex.minFilter = THREE.NearestFilter;
+      if (materialRef.current) materialRef.current.map = tex;
+    }, undefined, (err) => {
+      textureLoader.load(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`, (fallback) => {
+        fallback.magFilter = THREE.NearestFilter;
+        fallback.minFilter = THREE.NearestFilter;
+        if (materialRef.current) materialRef.current.map = fallback;
+      }, undefined, () => { });
+    }
     );
   };
 
@@ -67,16 +68,22 @@ export default function PersonajeController({ position = [0, 1, 0], inputs, acti
     posRef.current.x += moveX * MOVE_SPEED * delta;
     posRef.current.z += moveZ * MOVE_SPEED * delta;
 
+    // --- LÍMITES DEL MAPA ---
+    if (posRef.current.x < 11) posRef.current.x = 11;
+    if (posRef.current.x > 198) posRef.current.x = 198;
+    if (posRef.current.z < 20) posRef.current.z = 20;
+    if (posRef.current.z > 151) posRef.current.z = 151;
+
     if (personajeRef.current) {
       personajeRef.current.position.copy(posRef.current);
       // Fija la rotación para evitar giro 3D (pitch hacia atrás para mirar a la cámara isómetrica)
       personajeRef.current.rotation.set(-Math.PI / 4, 0, 0);
     }
-    
+
     // Log visual
     const divLog = document.getElementById('debug-coords');
     if (divLog && (isMoving || animState.current.frame === 0)) {
-        divLog.innerText = `X: ${Math.round(posRef.current.x)} | Z: ${Math.round(posRef.current.z)}`;
+      divLog.innerText = `X: ${Math.round(posRef.current.x)} | Z: ${Math.round(posRef.current.z)}`;
     }
 
     const OFFSET_Y = 24;
@@ -93,10 +100,10 @@ export default function PersonajeController({ position = [0, 1, 0], inputs, acti
       if (zona) {
         const dist = Math.hypot(posRef.current.x - zona.x, posRef.current.z - zona.z);
         if (dist <= zona.r) {
-           enCualquierArea = true;
-           if (zonaBloqueada !== loc) {
-             onCollision(loc);
-           }
+          enCualquierArea = true;
+          if (zonaBloqueada !== loc) {
+            onCollision(loc);
+          }
         }
       }
     });
@@ -105,7 +112,7 @@ export default function PersonajeController({ position = [0, 1, 0], inputs, acti
     if (zonaBloqueada) {
       const zona = ZONAS_MAPA[zonaBloqueada];
       if (zona && Math.hypot(posRef.current.x - zona.x, posRef.current.z - zona.z) > zona.r + 5) {
-         onZonalibear(); // Libera la zona al alejarse un poco
+        onZonalibear(); // Libera la zona al alejarse un poco
       }
     }
 

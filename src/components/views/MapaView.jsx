@@ -79,17 +79,17 @@ export default function MapaView() {
       <div className="absolute top-16 left-4 z-50 flex flex-col space-y-2">
         <button
           onClick={() => setShowMisiones(!showMisiones)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-pixel shadow opacity-90 border border-indigo-400 text-left">
-          📋 Tareas Activas
+          className="bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded-lg font-pixel shadow opacity-90 border border-indigo-400 text-left">
+          📋 Tareas Pendientes
         </button>
         <button
           onClick={() => setShowMapaImg(!showMapaImg)}
-          className="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg font-pixel shadow opacity-90 border border-sky-400 text-left">
+          className="bg-sky-600 hover:bg-sky-500 text-white px-2 py-1 rounded-lg font-pixel shadow opacity-90 border border-sky-400 text-left">
           🗺️ Ver Mapa
         </button>
         <button
           onClick={() => resolverPromesa && resolverPromesa('p')}
-          className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-pixel shadow opacity-90 border border-purple-400 text-left">
+          className="bg-purple-600 hover:bg-purple-500 text-white px-2 py-1 rounded-lg font-pixel shadow opacity-90 border border-purple-400 text-left">
           📱 Abrir Banca
         </button>
       </div>
@@ -102,7 +102,10 @@ export default function MapaView() {
       {/* DRAWER MISIONES */}
       {showMisiones && (
         <div className="absolute top-32 left-4 z-50 w-64 bg-slate-800/95 border border-slate-600 rounded-xl p-4 text-white shadow-xl backdrop-blur">
-          <h3 className="text-xl text-indigo-300 border-b border-white/20 pb-2 mb-3">Pendientes:</h3>
+          <div className="flex justify-between items-start mb-3 border-b border-white/20 pb-2">
+            <h3 className="text-xl text-indigo-300">Pendientes:</h3>
+            <button onClick={() => setShowMisiones(false)} className="text-slate-400 hover:text-white font-bold bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5 text-base leading-none">×</button>
+          </div>
           <ul className="space-y-2 text-sm text-slate-300">
             {arrLocalizaciones.length === 0 && <li>Ninguna tarea pendiente.</li>}
             {arrLocalizaciones.map((loc, idx) => (
@@ -122,8 +125,11 @@ export default function MapaView() {
 
       {/* DRAWER MAPA */}
       {showMapaImg && (
-        <div className="absolute top-16 right-4 z-50 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col pointer-events-none">
-          <h3 className="text-center font-pixel text-sky-300 mb-2">Croquis de la Zona</h3>
+        <div className="absolute top-16 right-4 z-50 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col pointer-events-auto">
+          <div className="flex justify-between items-center mb-2 px-2">
+            <h3 className="text-center font-pixel text-sky-300">Croquis de la Zona</h3>
+            <button onClick={() => setShowMapaImg(false)} className="text-slate-400 hover:text-white font-bold bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5 text-base leading-none">×</button>
+          </div>
           <div className="flex-1 bg-slate-900 rounded border border-white/10 flex items-center justify-center overflow-hidden">
             <img src={`${import.meta.env.BASE_URL}sprites/mapa_layout.png`} alt="Mapa" className="w-full h-full object-contain opacity-50" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = 'Sin textura'; }} />
           </div>
@@ -132,7 +138,7 @@ export default function MapaView() {
 
       {/* Renderizado 3D */}
       <Canvas camera={{ position: [0, 5, 10], fov: 100 }}>
-        <color attach="background" args={['#ffffff']} />
+        <color attach="background" args={['#8cf7ec']} />
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
 
@@ -157,8 +163,8 @@ export default function MapaView() {
           onChange={({ x, y }) => {
             setInputs(prev => ({
                ...prev,
-               up: y > 0.5,
-               down: y < -0.5,
+               up: y < -0.5,
+               down: y > 0.5,
                right: x > 0.5,
                left: x < -0.5
             }));
