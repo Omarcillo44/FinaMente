@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: 'https://omarcillo44.github.io/FinaMente/',
+  // base: '/FinaMente/',
   build: {
     rollupOptions: {
       output: {

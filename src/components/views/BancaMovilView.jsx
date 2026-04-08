@@ -1,53 +1,57 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useGameStore } from '../../store/gameStore';
 
 export default function BancaMovilView() {
+  const { datosPantalla, resolverPromesa } = useGameStore();
+  const banca = datosPantalla || {};
+  const [montoCustom, setMontoCustom] = useState('');
   return (
-    <div className="w-full h-full flex flex-col bg-slate-100 text-slate-800 p-6">
-      <div className="w-full max-w-md mx-auto h-full flex flex-col bg-white shadow-xl rounded-t-3xl overflow-hidden border border-slate-200 mt-8 relative">
-        <div className="bg-indigo-700 text-white p-6 rounded-b-3xl shadow-md z-10">
-          <h2 className="text-2xl font-bold">Mi Banca</h2>
-          <p className="text-sm opacity-80 mt-1">Saldo Disponible</p>
-          <p className="text-4xl font-bold mt-2">$2,450.00</p>
+    <div className="absolute inset-0 flex flex-col bg-slate-900/60 backdrop-blur-md text-slate-800 p-6 z-[100] font-pixel pointer-events-auto">
+      <div className="w-full max-w-md mx-auto h-[80%] flex flex-col bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200 mt-12 relative animate-fade-in-up">
+        <div className="bg-indigo-700 text-white p-6 rounded-b-3xl shadow-md z-10 font-pixel relative">
+          <button onClick={() => resolverPromesa({ tipo: 'CANCELAR' })} className="absolute top-4 right-4 text-xs font-pixel bg-indigo-800 px-2 py-1 rounded">Volver</button>
+          <h2 className="text-2xl font-pixel">Mi Banca</h2>
+          <p className="text-xs opacity-80 mt-2">Saldo Efectivo:</p>
+          <p className="text-3xl font-pixel mt-1">${banca.efectivoDisponible?.toFixed(2) || '0.00'}</p>
+          <div className="mt-4 p-3 bg-indigo-800 rounded-lg shadow-inner">
+            <p className="text-xs opacity-80">Deuda Tarjeta Crédito:</p>
+            <p className="text-2xl font-pixel text-red-200">-${banca.saldoInsoluto?.toFixed(2) || '0.00'}</p>
+            <p className="text-xs opacity-80 mt-1">Crédito libre: ${banca.creditoDisponible?.toFixed(2) || '0.00'} / ${banca.limiteCredito}</p>
+          </div>
         </div>
-        
+
         <div className="flex-1 p-6 space-y-4 overflow-y-auto">
-          <h3 className="font-bold text-slate-600">Acciones</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-indigo-50 p-4 rounded-xl text-center border border-indigo-100 active:scale-95 transition-transform cursor-pointer">
-              <div className="w-10 h-10 bg-indigo-200 rounded-full mx-auto mb-2"></div>
-              <p className="text-sm font-semibold text-indigo-800">Transferir</p>
+          <h3 className="font-pixel text-slate-600 font-pixel">Pago de Tarjeta</h3>
+          <div className="flex flex-col space-y-3 font-pixel text-sm">
+            <button
+              onClick={() => resolverPromesa({ tipo: 'MINIMO' })}
+              className="bg-indigo-100 p-3 rounded-xl border border-indigo-200 hover:bg-indigo-200 text-left transition-colors">
+              <span className="font-pixel block text-indigo-900">Pago Mínimo</span>
+              <span className="text-indigo-800">${banca.pagoMinimo?.toFixed(2) || '0.00'}</span>
+            </button>
+            <button
+              onClick={() => resolverPromesa({ tipo: 'TOTAL' })}
+              className="bg-emerald-100 p-3 rounded-xl border border-emerald-200 hover:bg-emerald-200 text-left transition-colors">
+              <span className="font-pixel block text-emerald-900">Pagar para NO generar intereses</span>
+              <span className="text-emerald-800">${banca.pagoNoIntereses?.toFixed(2) || '0.00'}</span>
+            </button>
+            <div className="bg-slate-100 p-3 rounded-xl border border-slate-200 flex gap-2">
+              <input type="number" placeholder="Monto" value={montoCustom} onChange={(e) => setMontoCustom(e.target.value)} className="w-1/2 p-2 rounded border border-slate-300" />
+              <button
+                onClick={() => resolverPromesa({ tipo: 'PARCIAL', monto: parseFloat(montoCustom) })}
+                className="w-1/2 bg-slate-800 text-white rounded font-pixel hover:bg-slate-700">Otro Monto</button>
             </div>
-            <div className="bg-emerald-50 p-4 rounded-xl text-center border border-emerald-100 active:scale-95 transition-transform cursor-pointer">
-              <div className="w-10 h-10 bg-emerald-200 rounded-full mx-auto mb-2"></div>
-              <p className="text-sm font-semibold text-emerald-800">Pagar Deuda</p>
-            </div>
-            <div className="bg-amber-50 p-4 rounded-xl text-center border border-amber-100 active:scale-95 transition-transform cursor-pointer">
-              <div className="w-10 h-10 bg-amber-200 rounded-full mx-auto mb-2"></div>
-              <p className="text-sm font-semibold text-amber-800">Invertir</p>
-            </div>
-            <div className="bg-red-50 p-4 rounded-xl text-center border border-red-100 active:scale-95 transition-transform cursor-pointer">
-              <div className="w-10 h-10 bg-red-200 rounded-full mx-auto mb-2"></div>
-              <p className="text-sm font-semibold text-red-800">Préstamo</p>
-            </div>
-          </div>
-          
-          <h3 className="font-bold text-slate-600 mt-6 pt-4 border-t border-slate-100">Movimientos Recientes</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-              <div>
-                <p className="font-semibold text-sm">Cobro Nómina</p>
-                <p className="text-xs text-slate-400">Hoy 09:00 AM</p>
-              </div>
-              <p className="text-emerald-500 font-bold">+$4,000.00</p>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-              <div>
-                <p className="font-semibold text-sm">Pago de Luz</p>
-                <p className="text-xs text-slate-400">Ayer 15:30</p>
-              </div>
-              <p className="text-red-500 font-bold">-$450.00</p>
+
+            <h3 className="font-pixel text-slate-600 font-pixel mt-4">Disposición de Efectivo</h3>
+            <div className="bg-rose-50 p-3 rounded-xl border border-rose-200 flex flex-col gap-2">
+              <p className="text-rose-800 text-xs text-balance">Retirar te cobra una comisión inmediata del {banca.comisionPct || '0'}%. Máximo retirable: ${banca.maxRetiro?.toFixed(2) || '0.00'}</p>
+              <button
+                onClick={() => resolverPromesa({ tipo: 'RETIRO', monto: banca.maxRetiro })}
+                className="bg-rose-600 text-white py-2 rounded font-pixel hover:bg-rose-500">Retirar Máximo</button>
             </div>
           </div>
+
+          {/* Movimientos quitados temporalmente ya que el motor usa Promesas planas en este panel */}
         </div>
       </div>
     </div>
