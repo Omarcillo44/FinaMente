@@ -1,7 +1,9 @@
 import { useGameStore } from '../store/gameStore';
 
 export class ReactMotorAdapter {
-    constructor() {}
+    constructor() {
+        this.ultimaLocalizacion = 'Casa';
+    }
 
     // Pausas
     async sleep(ms) {
@@ -24,11 +26,15 @@ export class ReactMotorAdapter {
     }
 
     async mostrarSelectorGastosLocalizacion(localizacion, gastos) {
+        this.ultimaLocalizacion = localizacion; 
         return await useGameStore.getState().solicitarInteraccion('Batalla', { modo: 'seleccionar_gasto', localizacion, gastos });
     }
 
     async mostrarMenuGasto(gasto, estadoVirtual, puedeIgnorar, tieneDeuda) {
-        return await useGameStore.getState().solicitarInteraccion('Batalla', { gasto, estadoVirtual, puedeIgnorar, tieneDeuda });
+        return await useGameStore.getState().solicitarInteraccion('Batalla', { 
+            gasto, estadoVirtual, puedeIgnorar, tieneDeuda,
+            localizacion: this.ultimaLocalizacion 
+        });
     }
 
     async mostrarMenuBancaMovil(estadoBanca) {
@@ -38,12 +44,18 @@ export class ReactMotorAdapter {
 
     async mostrarSelectorMSI(opcionesCuotas) {
         // Lo redirigimos a Batalla con un flag para mostrar los MSI
-        return await useGameStore.getState().solicitarInteraccion('Batalla', { modo: 'msi', opcionesCuotas });
+        return await useGameStore.getState().solicitarInteraccion('Batalla', { 
+            modo: 'msi', opcionesCuotas,
+            localizacion: this.ultimaLocalizacion
+        });
     }
 
     async mostrarMenuDisposicionObligatoria(gasto, maxRetiro, comisionPct) {
         // Redirigimos a Batalla con un flag para retiro urgente
-        return await useGameStore.getState().solicitarInteraccion('Batalla', { modo: 'retiroObligatorio', gasto, maxRetiro, comisionPct });
+        return await useGameStore.getState().solicitarInteraccion('Batalla', { 
+            modo: 'retiroObligatorio', gasto, maxRetiro, comisionPct,
+            localizacion: this.ultimaLocalizacion
+        });
     }
 
     async confirmarAvance() {

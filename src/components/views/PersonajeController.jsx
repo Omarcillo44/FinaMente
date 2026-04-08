@@ -14,7 +14,7 @@ export const ZONAS_MAPA = {
   'CENTRO_COMERCIAL': { x: 46, z: 126, r: 10 }
 };
 
-export default function PersonajeController({ position = [0, 1, 0], inputs, activas = [], onCollision, zonaBloqueada, onZonalibear }) {
+export default function PersonajeController({ position = [131, 1, 137], inputs, activas = [], onCollision, zonaBloqueada, onZonalibear }) {
   const personajeRef = useRef();
   const materialRef = useRef();
   const { camera } = useThree();

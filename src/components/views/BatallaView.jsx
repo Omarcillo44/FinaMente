@@ -171,8 +171,8 @@ export default function BatallaView() {
       </div>
 
       {/* --- CAPA FONDO 3D (CANVAS) --- */}
-      <Canvas camera={{ position: [0, 5, 10], fov: 90 }} className="absolute inset-0 z-0 opacity-40">
-        <ambientLight intensity={0.4} />
+      <Canvas camera={{ position: [25, 20, 50], fov: 50 }} className="absolute inset-0 z-0 opacity-40">
+        <ambientLight intensity={0.8} />
         <directionalLight position={[10, 10, 5]} intensity={0.8} />
 
         <Suspense fallback={null}>
