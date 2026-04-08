@@ -73,8 +73,9 @@ export default function PersonajeController({ position = [0, 1, 0], inputs, acti
       personajeRef.current.rotation.set(-Math.PI / 4, 0, 0);
     }
     
+    // Log visual
     const divLog = document.getElementById('debug-coords');
-    if (divLog && (isMoving || prevFrame === 0)) {
+    if (divLog && (isMoving || animState.current.frame === 0)) {
         divLog.innerText = `X: ${Math.round(posRef.current.x)} | Z: ${Math.round(posRef.current.z)}`;
     }
 
