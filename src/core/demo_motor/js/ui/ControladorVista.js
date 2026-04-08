@@ -364,4 +364,18 @@ export class ControladorVista {
     mostrarResolucionGastoIgnorado() {
         this.consola.print('Has ignorado este gusto.');
     }
+
+    mostrarCargandoAnalisis() {
+        this.consola.print('\n----------------------------------------', 'system');
+        this.consola.print('🧬 ENVIANDO DATOS A LA IA PARA ANÁLISIS...', 'system');
+        this.consola.print('----------------------------------------\n', 'system');
+    }
+
+    mostrarFeedbackAPI(feedback) {
+        this.consola.print('\n========================================', 'prompt');
+        this.consola.print('🌟 FEEDBACK DE LA IA (FinaMente AI) 🌟', 'prompt');
+        this.consola.print('========================================', 'prompt');
+        this.consola.print(feedback, 'info');
+        this.consola.print('========================================\n', 'prompt');
+    }
 }

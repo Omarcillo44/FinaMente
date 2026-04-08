@@ -26,10 +26,12 @@ classDiagram
     class MotorJuego {
         +Jugador jugador
         +ConfigPerfil config
+        +Historial historial
         +Number stageActual
         +Number semanaActual
         +EstadoJuegoEnum estadoJuego
-        +Array gastosRecurrentesFijos
+        +Function onGameOver
+        +Function onCorteProcesado
         +inicializarJugador(perfilEnum) Promise
         +iniciarJuego(perfilEnum) Promise
         +finalizarPartidaVoluntaria() Promise
@@ -38,6 +40,15 @@ classDiagram
         -realizarOperacionesBancaMovil() Promise
         +actualizarUIHeaders() void
         -evaluarGameOver() Promise~boolean~
+    }
+
+    class Historial {
+        +Object datos
+        +registrarConfiguracion(config)
+        +registrarGasto(gasto, decision, jugador, msiData)
+        +registrarPago(tipo, monto, jugador)
+        +finalizarHistorial(estado, motivo, stats)
+        +obtenerJSON()
     }
 
     class Jugador {
@@ -92,6 +103,7 @@ classDiagram
     }
 
     MotorJuego --> Jugador
+    MotorJuego --> Historial
     Jugador --> TarjetaCredito
     TarjetaCredito "1" *-- "0..*" CuotaMSI : contiene
     MotorJuego --> Gasto : genera y procesa
@@ -118,6 +130,8 @@ El motor `MotorJuego` recibe en su constructor un objeto `vista`. Este objeto de
 | `mostrarNotificacionVentanaPagoInmediata()` | ninguno | `void` | Aviso especial en el Stage 6 para indicar que se debe liquidar la cuenta. |
 | `confirmarAvance()` | ninguno | `Promise<'salir' \| ''>` | Al final de cada semana pregunta si continuar o salir. |
 | `mostrarResolucionGastoDebito()`, `mostrarResolucionGastoCredito()`, `mostrarResolucionGastoMSI(cuotas)`, `mostrarResolucionGastoIgnorado()`, `mostrarResolucionPagoMinimo()`, `mostrarResolucionPagoTotal()`, `mostrarResolucionPagoParcial(monto)`, `mostrarResolucionExpiracion(cargo)`, `mostrarAumentoLinea(limiteViejo, limiteNuevo)`, `mostrarCambioScore(mensaje, tipo, nuevoScore)`, `mostrarAdvertenciaUltimoDia()`, `mostrarGameOverPorHP(stage, stats)`, `mostrarGameOverInsolvencia(stage, stats)`, `mostrarGameOverInsolvenciaExtrema(gasto, stage, stats)`, `mostrarVictoria(hp, score)`, `mostrarResumenSalidaVoluntaria(stage, stats)`, `mostrarFinStage(stage, stats, esPerfilVistoso)` | según corresponda | `void` | Notificaciones, diálogos y pantallas de estado. |
+| `mostrarCargandoAnalisis()` | ninguno | `void` | Muestra un indicador de "Analizando partida con IA..." al terminar. |
+| `mostrarFeedbackAPI(feedback)` | `string` | `void` | Muestra el resumen educativo retornado por el servidor. |
 | `sleep(ms)` | `number` | `Promise<void>` | Pausa la ejecución del motor mientras la UI muestra animaciones. |
 
 > **Nota:** El motor ya implementa `sleep` llamando a `vista.sleep(ms)`. React puede implementarlo simplemente como `new Promise(resolve => setTimeout(resolve, ms))`.
@@ -187,6 +201,14 @@ sequenceDiagram
         Motor->>Logica: reiniciarCicloDePago()
     end
     React->>React: mostrarVictoria()
+    Motor->>React: onGameOver(historialJSON)
+    rect rgb(240, 240, 240)
+    Note over React, Backend: Análisis Post-Partida
+    React->>React: mostrarCargandoAnalisis()
+    React->>Backend: POST /partida/analizar
+    Backend-->>React: { feedback }
+    React->>React: mostrarFeedbackAPI(feedback)
+    end
 ```
 
 ---
@@ -282,7 +304,36 @@ function App() {
     mostrarFinStage: (stage, stats, esVistoso) => console.log(`Fin del mes ${stage}`, stats),
     mostrarInicializacion: (perfil, ingreso, limite, tasa) => console.log(`Inicializado ${perfil}`),
     mostrarInicioSemana: (stage, semana) => console.log(`Semana ${semana} del mes ${stage}`),
+    
+    // Integración de API
+    mostrarCargandoAnalisis: () => alert('🧬 Analizando tu partida con IA...'),
+    mostrarFeedbackAPI: (feedback) => alert('🌟 FEEDBACK IA: ' + feedback),
   };
+
+  // 2. Definir Callbacks de Integración
+  useEffect(() => {
+    if (motorRef.current) {
+        motorRef.current.onGameOver = async (datos) => {
+            vista.mostrarCargandoAnalisis();
+            try {
+                const response = await fetch('https://stag-improved-wildcat.ngrok-free.app/partida/analizar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                const res = await response.json();
+                vista.mostrarFeedbackAPI(res.feedback);
+            } catch (e) {
+                console.error("Error en API", e);
+            }
+        };
+
+        motorRef.current.onCorteProcesado = (stats) => {
+            console.log("Mes finalizado, nuevos stats:", stats);
+            // Ideal para disparar animaciones de fin de mes en React
+        };
+    }
+  }, [motorRef.current]);
 
   // Iniciar el juego al montar el componente
   useEffect(() => {

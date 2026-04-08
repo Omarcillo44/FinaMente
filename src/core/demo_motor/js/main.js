@@ -8,6 +8,28 @@ window.addEventListener('DOMContentLoaded', async () => {
     const vista = new ControladorVista(consola);
     const motor = new MotorJuego(vista);
 
+    // Configuración de la integración con la API de IA
+    motor.onGameOver = async (datos) => {
+        vista.mostrarCargandoAnalisis();
+        try {
+            const response = await fetch('https://stag-improved-wildcat.ngrok-free.app/partida/analizar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            });
+
+            if (!response.ok) throw new Error('Error en la API de FinaMente');
+
+            const result = await response.json();
+            vista.mostrarFeedbackAPI(result.feedback);
+        } catch (error) {
+            console.error('Error al analizar partida:', error);
+            consola.print('⚠️ No se pudo obtener el análisis de la IA: ' + error.message, 'error');
+        }
+    };
+
     consola.print('============================================', 'info');
     consola.print('             F i n a M e n t e              ', 'info');
     consola.print('          Demo Consola Lógica V1            ', 'info');
