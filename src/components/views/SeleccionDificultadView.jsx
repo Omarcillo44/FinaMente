@@ -14,7 +14,12 @@ export default function SeleccionDificultadView() {
     // 2. Crear instancia pura del motor pasándole el adaptador
     const motor = new MotorJuego(adaptador);
 
-    // 3. Arrancar el bucle del juego en background (No hacemos await aquí para que no se congele este hilo, 
+    // Conectar el callback nativo del motor para recolectar el JSON analítico de la API
+    motor.onGameOver = async (datosJSON) => {
+        useGameStore.getState().setHistorialIA(datosJSON);
+    };
+
+    // 3. Arrancar el bucle del juego en background 
     // el motor orquestará las promesas de la UI por su cuenta)
     motor.iniciarJuego(perfil);
   };

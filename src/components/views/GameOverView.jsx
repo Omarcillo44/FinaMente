@@ -2,26 +2,26 @@ import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 
 export default function GameOverView() {
-  const { datosPantalla, cambiarEscena, headers } = useGameStore();
+  const { datosPantalla, cambiarEscena, historialIA } = useGameStore();
   const [analizando, setAnalizando] = React.useState(false);
 
   const isVictoria = datosPantalla?.victoria;
 
   const solicitarAnalisisIA = async () => {
       setAnalizando(true);
-      
-      const datos = {
-          resultado: datosPantalla,
-          estadoFinal: headers 
-      };
+
+      // Si el motor inyectó el JSON rico en historialIA, lo usamos. 
+      // Si por alguna razón está vacío, enviamos como fallback los stats (lo cual podría fallar en backend pero no reventamos el frontend).
+      const payload = historialIA || (datosPantalla?.stats ? datosPantalla.stats : datosPantalla);
 
       try {
           const response = await fetch('https://stag-improved-wildcat.ngrok-free.app/partida/analizar', {
               method: 'POST',
               headers: {
-                  'Content-Type': 'application/json'
+                  'Content-Type': 'application/json',
+                  'ngrok-skip-browser-warning': 'true' // Evita intercepción de ngrok
               },
-              body: JSON.stringify(datos)
+              body: JSON.stringify(payload)
           });
 
           if (!response.ok) throw new Error('Error en la API de FinaMente');

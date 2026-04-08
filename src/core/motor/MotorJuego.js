@@ -21,8 +21,8 @@ export class MotorJuego {
         this.historial = new Historial();
 
         // Callbacks para integración con React/UI externa
-        this.onGameOver = null; 
-        this.onCorteProcesado = null; 
+        this.onGameOver = null;
+        this.onCorteProcesado = null;
     }
 
     async inicializarJugador(perfilEnum) {
@@ -50,7 +50,7 @@ export class MotorJuego {
 
         // Registrar perfil en el historial
         this.historial.registrarConfiguracion(this.config);
-        
+
         // Generar recurrentes que serán fijos por todo el juego
         this.generarRecurrentesFijos();
 
@@ -94,7 +94,7 @@ export class MotorJuego {
                 pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(),
                 nuevoIngreso: this.jugador.ingresoMensual
             };
-            this.vista.mostrarGameOverPorHP(this.stageActual, stats); 
+            this.vista.mostrarGameOverPorHP(this.stageActual, stats);
             this.historial.finalizarHistorial('GAME_OVER', 'HP_CERO', stats);
             if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
             return true;
@@ -104,10 +104,10 @@ export class MotorJuego {
 
     generarRecurrentesFijos() {
         const catalogo = CatalogoGastos.getGastosPorCategoria(this.config.perfil, "Recurrente");
-        
+
         // Determinar cuántos recurrentes tendrá este jugador según su perfil
         const numRecurrentes = GeneradorAleatorio.randomBetween(this.config.recurrentesMin, this.config.recurrentesMax);
-        
+
         // Elegir aleatoriamente del catálogo sin repetir
         const shuffled = [...catalogo].sort(() => 0.5 - Math.random());
         const seleccion = shuffled.slice(0, Math.min(numRecurrentes, shuffled.length));
@@ -169,7 +169,7 @@ export class MotorJuego {
             if (this.onCorteProcesado) this.onCorteProcesado(statsV4);
 
             // 3. Procesos Técnicos de Cierre (Corte y Score)
-            this.jugador.tarjeta.generarIntereses(); 
+            this.jugador.tarjeta.generarIntereses();
 
             const usoCredito = this.jugador.tarjeta.calcularUsoTotal();
             if (usoCredito < 0.60) {
@@ -187,7 +187,7 @@ export class MotorJuego {
 
             // Reiniciar el tracker de abonos para la tarjeta de crédito en el nuevo ciclo
             this.jugador.tarjeta.reiniciarCicloDePago();
-            
+
             if (this.stageActual === 6) {
                 // Forzar un pago voluntario final al terminar el último stage
                 this.vista.mostrarNotificacionVentanaPagoInmediata();
@@ -216,7 +216,7 @@ export class MotorJuego {
 
     async iniciarStage() {
         this.actualizarUIHeaders();
-        
+
         for (this.semanaActual = 1; this.semanaActual <= 4; this.semanaActual++) {
             this.actualizarUIHeaders();
             this.historial.nuevaSemana(this.semanaActual);
@@ -240,7 +240,7 @@ export class MotorJuego {
                     await this.realizarOperacionesBancaMovil();
                     continue;
                 }
-                
+
                 if (locElegida === 'x') {
                     return await this.finalizarPartidaVoluntaria();
                 }
@@ -255,7 +255,7 @@ export class MotorJuego {
                     }
 
                     const seleccion = await this.vista.mostrarSelectorGastosLocalizacion(locElegida, gastosEnLoc);
-                    
+
                     if (seleccion === 'p') {
                         await this.realizarOperacionesBancaMovil();
                         continue;
@@ -272,7 +272,7 @@ export class MotorJuego {
 
                     const gastoSeleccionado = gastosEnLoc[parseInt(seleccion) - 1];
                     const resultado = await this.procesarGasto(gastoSeleccionado);
-                    
+
                     this.actualizarUIHeaders();
                     if (await this.evaluarGameOver()) return;
 
@@ -299,9 +299,7 @@ export class MotorJuego {
             // Preguntar si terminar el juego en cualquier momento
             const salir = await this.vista.confirmarAvance();
             if (salir === 'salir') {
-                this.estadoJuego = EstadoJuegoEnum.GAME_OVER;
-                this.vista.mostrarCancelacionUsuario();
-                return;
+                return await this.finalizarPartidaVoluntaria();
             }
         }
     }
@@ -333,7 +331,7 @@ export class MotorJuego {
             this.evaluarAumentoLinea();
         } else if (eleccion.tipo === 'TOTAL') {
             this.jugador.pagarDeudaTDC(pagoNoIntereses);
-            const puntos = this.semanaActual === 1 ? 10 : 5; 
+            const puntos = this.semanaActual === 1 ? 10 : 5;
             this.vista.mostrarResolucionPagoTotal();
             this.historial.registrarPago('TOTAL', pagoNoIntereses, this.jugador);
             this.jugador.modificarScore(puntos);
@@ -372,7 +370,7 @@ export class MotorJuego {
     async procesarGasto(gasto) {
         if (!gasto.aceptaTDC && gasto.monto > this.jugador.efectivoDisponible) {
             const dispEfectivoMax = this.jugador.tarjeta.calcularEfectivoDisponibleParaRetirar();
-            
+
             if (gasto.monto > (this.jugador.efectivoDisponible + dispEfectivoMax)) {
                 this.estadoJuego = EstadoJuegoEnum.GAME_OVER;
                 const stats = {
@@ -390,23 +388,23 @@ export class MotorJuego {
             } else {
                 const decisionRetiro = await this.vista.mostrarMenuDisposicionObligatoria(gasto, dispEfectivoMax, this.jugador.tarjeta.comisionRetiroPct);
                 if (decisionRetiro && decisionRetiro.monto > 0) {
-                     const retiroOK = this.jugador.retirarEfectivoDeTDC(decisionRetiro.monto);
-                     this.actualizarUIHeaders();
-                     if (!retiroOK) {
-                         this.estadoJuego = EstadoJuegoEnum.GAME_OVER;
-                         const statsFinal = { hp: this.jugador.calcularHP(), score: this.jugador.scoreCrediticio, cv: this.jugador.calidadVida, pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(), pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(), nuevoIngreso: this.jugador.ingresoMensual };
-                         this.vista.mostrarGameOverInsolvenciaExtrema(gasto, this.stageActual, statsFinal);
-                         this.historial.finalizarHistorial('GAME_OVER', 'INSOLVENCIA_EXTREMA', statsFinal);
-                         if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
-                         return 'gameover';
-                     }
+                    const retiroOK = this.jugador.retirarEfectivoDeTDC(decisionRetiro.monto);
+                    this.actualizarUIHeaders();
+                    if (!retiroOK) {
+                        this.estadoJuego = EstadoJuegoEnum.GAME_OVER;
+                        const statsFinal = { hp: this.jugador.calcularHP(), score: this.jugador.scoreCrediticio, cv: this.jugador.calidadVida, pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(), pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(), nuevoIngreso: this.jugador.ingresoMensual };
+                        this.vista.mostrarGameOverInsolvenciaExtrema(gasto, this.stageActual, statsFinal);
+                        this.historial.finalizarHistorial('GAME_OVER', 'INSOLVENCIA_EXTREMA', statsFinal);
+                        if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
+                        return 'gameover';
+                    }
                 } else {
-                     this.estadoJuego = EstadoJuegoEnum.GAME_OVER;
-                     const statsFinal = { hp: this.jugador.calcularHP(), score: this.jugador.scoreCrediticio, cv: this.jugador.calidadVida, pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(), pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(), nuevoIngreso: this.jugador.ingresoMensual };
-                     this.vista.mostrarGameOverInsolvenciaExtrema(gasto, this.stageActual, statsFinal);
-                     this.historial.finalizarHistorial('GAME_OVER', 'INSOLVENCIA_EXTREMA', statsFinal);
-                     if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
-                     return 'gameover';
+                    this.estadoJuego = EstadoJuegoEnum.GAME_OVER;
+                    const statsFinal = { hp: this.jugador.calcularHP(), score: this.jugador.scoreCrediticio, cv: this.jugador.calidadVida, pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(), pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(), nuevoIngreso: this.jugador.ingresoMensual };
+                    this.vista.mostrarGameOverInsolvenciaExtrema(gasto, this.stageActual, statsFinal);
+                    this.historial.finalizarHistorial('GAME_OVER', 'INSOLVENCIA_EXTREMA', statsFinal);
+                    if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
+                    return 'gameover';
                 }
             }
         }
@@ -446,8 +444,8 @@ export class MotorJuego {
         } else if (decision === 'd') {
             const exito = this.jugador.pagarConDebito(gasto.monto);
             if (!exito) {
-               this.vista.mostrarMensaje("No tienes efectivo suficiente.");
-               return await this.procesarGasto(gasto);
+                this.vista.mostrarMensaje("No tienes efectivo suficiente.");
+                return await this.procesarGasto(gasto);
             }
             if (gasto instanceof GastoGusto) gasto.pagar(this.jugador);
             this.vista.mostrarResolucionGastoDebito();
@@ -460,8 +458,8 @@ export class MotorJuego {
             }
             const exito = this.jugador.comprarConTDC(gasto.monto);
             if (!exito) {
-               this.vista.mostrarMensaje("No tienes crédito suficiente.");
-               return await this.procesarGasto(gasto);
+                this.vista.mostrarMensaje("No tienes crédito suficiente.");
+                return await this.procesarGasto(gasto);
             }
             if (gasto instanceof GastoGusto) gasto.pagar(this.jugador);
             this.vista.mostrarResolucionGastoCredito();
