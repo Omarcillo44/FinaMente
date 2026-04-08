@@ -5,6 +5,7 @@ import { Jugador } from './Jugador.js';
 import { GeneradorAleatorio } from './GeneradorAleatorio.js';
 import { GastoGusto, GastoRecurrente } from './Gasto.js';
 import { CatalogoGastos } from './CatalogoDatos.js';
+import { Historial } from './Historial.js';
 
 export class MotorJuego {
     constructor(vista) {
@@ -17,6 +18,11 @@ export class MotorJuego {
 
         this.gastosSemana = []; // logs
         this.gastosRecurrentesFijos = []; // Gastos permanentes por toda la partida
+        this.historial = new Historial();
+
+        // Callbacks para integración con React/UI externa
+        this.onGameOver = null; 
+        this.onCorteProcesado = null; 
     }
 
     async inicializarJugador(perfilEnum) {
@@ -41,6 +47,9 @@ export class MotorJuego {
         const tarjeta = new TarjetaCredito(limiteInicial, this.config);
 
         this.jugador = new Jugador(perfilEnum, ingresoInicial, tarjeta);
+
+        // Registrar perfil en el historial
+        this.historial.registrarConfiguracion(this.config);
         
         // Generar recurrentes que serán fijos por todo el juego
         this.generarRecurrentesFijos();
@@ -83,9 +92,11 @@ export class MotorJuego {
                 score: this.jugador.scoreCrediticio,
                 cv: this.jugador.calidadVida,
                 pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(),
-                nuevoIngreso: 0
+                nuevoIngreso: this.jugador.ingresoMensual
             };
             this.vista.mostrarGameOverPorHP(this.stageActual, stats); 
+            this.historial.finalizarHistorial('GAME_OVER', 'HP_CERO', stats);
+            if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
             return true;
         }
         return false;
@@ -119,9 +130,11 @@ export class MotorJuego {
             cv: this.jugador.calidadVida,
             pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(),
             pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(),
-            nuevoIngreso: 0
+            nuevoIngreso: this.jugador.ingresoMensual
         };
         this.vista.mostrarResumenSalidaVoluntaria(this.stageActual, stats);
+        this.historial.finalizarHistorial('GAME_OVER', 'VOLUNTARIO', stats);
+        if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
         return true;
     }
 
@@ -130,6 +143,7 @@ export class MotorJuego {
         this.stageActual = 1;
 
         while (this.stageActual <= 6 && this.estadoJuego === EstadoJuegoEnum.EN_CURSO) {
+            this.historial.nuevaEtapa(this.stageActual);
             await this.iniciarStage();
             if (this.estadoJuego === EstadoJuegoEnum.GAME_OVER) break;
 
@@ -152,6 +166,7 @@ export class MotorJuego {
             };
             const esPerfilVistoso = (this.config.perfil === PerfilEnum.NINI);
             this.vista.mostrarFinStage(this.stageActual, statsV4, esPerfilVistoso);
+            if (this.onCorteProcesado) this.onCorteProcesado(statsV4);
 
             // 3. Procesos Técnicos de Cierre (Corte y Score)
             this.jugador.tarjeta.generarIntereses(); 
@@ -185,7 +200,17 @@ export class MotorJuego {
 
         if (this.estadoJuego !== EstadoJuegoEnum.GAME_OVER) {
             this.estadoJuego = EstadoJuegoEnum.COMPLETADO;
+            const statsV4 = {
+                hp: this.jugador.calcularHP(),
+                score: this.jugador.scoreCrediticio,
+                cv: this.jugador.calidadVida,
+                pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(),
+                pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(),
+                nuevoIngreso: this.jugador.ingresoMensual
+            };
             this.vista.mostrarVictoria(this.jugador.calcularHP(), this.jugador.scoreCrediticio);
+            this.historial.finalizarHistorial('VICTORIA', 'COMPLETADO', statsV4);
+            if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
         }
     }
 
@@ -194,6 +219,7 @@ export class MotorJuego {
         
         for (this.semanaActual = 1; this.semanaActual <= 4; this.semanaActual++) {
             this.actualizarUIHeaders();
+            this.historial.nuevaSemana(this.semanaActual);
             this.vista.mostrarInicioSemana(this.stageActual, this.semanaActual); //React
 
             // Genera los gastos de la semana actual
@@ -302,18 +328,21 @@ export class MotorJuego {
             this.jugador.pagarDeudaTDC(pagoMinimo);
             this.vista.actualizarHeaders({ ...estadoBanca, hp: this.jugador.calcularHP() }); // Refresh
             this.vista.mostrarResolucionPagoMinimo();
+            this.historial.registrarPago('MINIMO', pagoMinimo, this.jugador);
             this.jugador.modificarScore(0);
             this.evaluarAumentoLinea();
         } else if (eleccion.tipo === 'TOTAL') {
             this.jugador.pagarDeudaTDC(pagoNoIntereses);
             const puntos = this.semanaActual === 1 ? 10 : 5; 
             this.vista.mostrarResolucionPagoTotal();
+            this.historial.registrarPago('TOTAL', pagoNoIntereses, this.jugador);
             this.jugador.modificarScore(puntos);
             this.vista.mostrarCambioScore(null, null, this.jugador.scoreCrediticio);
             this.evaluarAumentoLinea();
         } else if (eleccion.tipo === 'PARCIAL') {
             this.jugador.pagarDeudaTDC(eleccion.monto);
             this.vista.mostrarResolucionPagoParcial(eleccion.monto);
+            this.historial.registrarPago('PARCIAL', eleccion.monto, this.jugador);
             this.evaluarAumentoLinea();
         } else if (eleccion.tipo === 'RETIRO') {
             const exito = this.jugador.retirarEfectivoDeTDC(eleccion.monto);
@@ -352,9 +381,11 @@ export class MotorJuego {
                     cv: this.jugador.calidadVida,
                     pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(),
                     pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(),
-                    nuevoIngreso: 0
+                    nuevoIngreso: this.jugador.ingresoMensual
                 };
                 this.vista.mostrarGameOverInsolvenciaExtrema(gasto, this.stageActual, stats);
+                this.historial.finalizarHistorial('GAME_OVER', 'INSOLVENCIA_EXTREMA', stats);
+                if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
                 return 'gameover';
             } else {
                 const decisionRetiro = await this.vista.mostrarMenuDisposicionObligatoria(gasto, dispEfectivoMax, this.jugador.tarjeta.comisionRetiroPct);
@@ -363,14 +394,18 @@ export class MotorJuego {
                      this.actualizarUIHeaders();
                      if (!retiroOK) {
                          this.estadoJuego = EstadoJuegoEnum.GAME_OVER;
-                         const statsFinal = { hp: this.jugador.calcularHP(), score: this.jugador.scoreCrediticio, cv: this.jugador.calidadVida, pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(), pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(), nuevoIngreso: 0 };
+                         const statsFinal = { hp: this.jugador.calcularHP(), score: this.jugador.scoreCrediticio, cv: this.jugador.calidadVida, pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(), pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(), nuevoIngreso: this.jugador.ingresoMensual };
                          this.vista.mostrarGameOverInsolvenciaExtrema(gasto, this.stageActual, statsFinal);
+                         this.historial.finalizarHistorial('GAME_OVER', 'INSOLVENCIA_EXTREMA', statsFinal);
+                         if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
                          return 'gameover';
                      }
                 } else {
                      this.estadoJuego = EstadoJuegoEnum.GAME_OVER;
-                     const statsFinal = { hp: this.jugador.calcularHP(), score: this.jugador.scoreCrediticio, cv: this.jugador.calidadVida, pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(), pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(), nuevoIngreso: 0 };
+                     const statsFinal = { hp: this.jugador.calcularHP(), score: this.jugador.scoreCrediticio, cv: this.jugador.calidadVida, pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(), pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(), nuevoIngreso: this.jugador.ingresoMensual };
                      this.vista.mostrarGameOverInsolvenciaExtrema(gasto, this.stageActual, statsFinal);
+                     this.historial.finalizarHistorial('GAME_OVER', 'INSOLVENCIA_EXTREMA', statsFinal);
+                     if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
                      return 'gameover';
                 }
             }
@@ -393,9 +428,11 @@ export class MotorJuego {
                 cv: this.jugador.calidadVida,
                 pagoMinimo: this.jugador.tarjeta.calcularPagoMinimo(),
                 pagoNoIntereses: this.jugador.tarjeta.calcularPagoNoGenerarIntereses(),
-                nuevoIngreso: 0
+                nuevoIngreso: this.jugador.ingresoMensual
             };
             this.vista.mostrarGameOverInsolvencia(this.stageActual, stats);
+            this.historial.finalizarHistorial('GAME_OVER', 'INSOLVENCIA', stats);
+            if (this.onGameOver) this.onGameOver(this.historial.obtenerJSON());
             return 'gameover';
         }
 
@@ -414,6 +451,7 @@ export class MotorJuego {
             }
             if (gasto instanceof GastoGusto) gasto.pagar(this.jugador);
             this.vista.mostrarResolucionGastoDebito();
+            this.historial.registrarGasto(gasto, 'd', this.jugador);
             return 'pagado';
         } else if (decision === 't') {
             if (!gasto.aceptaTDC) {
@@ -427,6 +465,7 @@ export class MotorJuego {
             }
             if (gasto instanceof GastoGusto) gasto.pagar(this.jugador);
             this.vista.mostrarResolucionGastoCredito();
+            this.historial.registrarGasto(gasto, 't', this.jugador);
             return 'pagado';
         } else if (decision === 'm') {
             if (!gasto.aceptaMSI) {
@@ -441,10 +480,12 @@ export class MotorJuego {
             }
             if (gasto instanceof GastoGusto) gasto.pagar(this.jugador);
             this.vista.mostrarResolucionGastoMSI(cuotasInput);
+            this.historial.registrarGasto(gasto, 'm', this.jugador, { cuotas: cuotasInput });
             return 'pagado';
         } else if (decision === 'i') {
             gasto.ignorar(this.jugador);
             this.vista.mostrarResolucionGastoIgnorado();
+            this.historial.registrarGasto(gasto, 'i', this.jugador);
             return 'ignorado';
         }
     }
