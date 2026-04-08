@@ -4,6 +4,7 @@ import { useGLTF, OrbitControls } from '@react-three/drei';
 import PersonajeController from './PersonajeController';
 import Joystick from './Joystick';
 import SharedHUD from '../ui/SharedHUD';
+import BancaMovilView from './BancaMovilView';
 import { useGameStore } from '../../store/gameStore';
 
 const URL_MAPA = `${import.meta.env.BASE_URL}models/Mapa.glb`;
@@ -71,17 +72,25 @@ export default function MapaView() {
       {/* HUD COMPARTIDO */}
       <SharedHUD />
 
+      {/* OVERLAY BANCA MOVIL */}
+      {datosPantalla?.modo === 'banca' && <BancaMovilView />}
+
       {/* BOTONES PARA ABRIR CAJONES */}
       <div className="absolute top-16 left-4 z-50 flex flex-col space-y-2">
         <button
           onClick={() => setShowMisiones(!showMisiones)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-bold shadow opacity-90 border border-indigo-400 text-left">
+          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-pixel shadow opacity-90 border border-indigo-400 text-left">
           📋 Tareas Activas
         </button>
         <button
           onClick={() => setShowMapaImg(!showMapaImg)}
-          className="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg font-bold shadow opacity-90 border border-sky-400 text-left">
+          className="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg font-pixel shadow opacity-90 border border-sky-400 text-left">
           🗺️ Ver Mapa
+        </button>
+        <button
+          onClick={() => resolverPromesa && resolverPromesa('p')}
+          className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-pixel shadow opacity-90 border border-purple-400 text-left">
+          📱 Abrir Banca
         </button>
       </div>
 
@@ -114,7 +123,7 @@ export default function MapaView() {
       {/* DRAWER MAPA */}
       {showMapaImg && (
         <div className="absolute top-16 right-4 z-50 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col pointer-events-none">
-          <h3 className="text-center font-bold text-sky-300 mb-2">Croquis de la Zona</h3>
+          <h3 className="text-center font-pixel text-sky-300 mb-2">Croquis de la Zona</h3>
           <div className="flex-1 bg-slate-900 rounded border border-white/10 flex items-center justify-center overflow-hidden">
             <img src={`${import.meta.env.BASE_URL}sprites/mapa_layout.png`} alt="Mapa" className="w-full h-full object-contain opacity-50" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = 'Sin textura'; }} />
           </div>

@@ -4,6 +4,7 @@ import { useGLTF, OrbitControls } from '@react-three/drei';
 import { useGameStore } from '../../store/gameStore';
 import Texto2D from '../ui/Texto2D';
 import SharedHUD from '../ui/SharedHUD';
+import BancaMovilView from './BancaMovilView';
 
 // ESCENARIO GENERICO DE FALLBACK
 const URL_ESCENARIO_FALLBACK = `${import.meta.env.BASE_URL}models/Escenario_Escuela.glb`;
@@ -40,6 +41,9 @@ export default function BatallaView() {
       
       {/* SHARD HUD ARRIBA */}
       <SharedHUD />
+
+      {/* OVERLAY BANCA MOVIL */}
+      {datosPantalla?.modo === 'banca' && <BancaMovilView />}
 
       {/* --- CAPA 2D UI SUPERPUESTA AL CANVAS 3D --- */}
       <div className="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between">

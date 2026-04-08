@@ -32,7 +32,8 @@ export class ReactMotorAdapter {
     }
 
     async mostrarMenuBancaMovil(estadoBanca) {
-        return await useGameStore.getState().solicitarInteraccion('BancaMovil', estadoBanca);
+        const currentScene = useGameStore.getState().escenaActual;
+        return await useGameStore.getState().solicitarInteraccion(currentScene, { modo: 'banca', ...estadoBanca });
     }
 
     async mostrarSelectorMSI(opcionesCuotas) {
