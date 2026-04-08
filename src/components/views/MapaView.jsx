@@ -5,7 +5,9 @@ import PersonajeController, { ZONAS_MAPA } from './PersonajeController';
 import Joystick from './Joystick';
 import SharedHUD from '../ui/SharedHUD';
 import BancaMovilView from './BancaMovilView';
+import CreditosView from './CreditosView';
 import { useGameStore } from '../../store/gameStore';
+import { pausarMusicaGlobal, reanudarMusicaGlobal, detenerMusicaGlobal } from '../../core/AudioGlobal';
 
 const URL_MAPA = `${import.meta.env.BASE_URL}models/Mapa.glb`;
 
@@ -22,6 +24,28 @@ export default function MapaView() {
   // Drawers UI
   const [showMisiones, setShowMisiones] = useState(false);
   const [showMapaImg, setShowMapaImg] = useState(false);
+  const [showPausa, setShowPausa] = useState(false);
+  const [showCreditosOverlay, setShowCreditosOverlay] = useState(false);
+
+  const handlePausar = () => {
+    pausarMusicaGlobal();
+    setShowPausa(true);
+  };
+
+  const handleReanudar = () => {
+    reanudarMusicaGlobal();
+    setShowPausa(false);
+  };
+
+  const handleSalirVoluntario = () => {
+    detenerMusicaGlobal();
+    setShowPausa(false);
+    if (resolverPromesa) resolverPromesa('x');
+  };
+
+  const handleCreditos = () => {
+    setShowCreditosOverlay(true);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -57,9 +81,9 @@ export default function MapaView() {
     // Compatibilidad motor vs zonas mapeadas:
     let resolucion = loc;
     if (loc === 'CASA') {
-        resolucion = arrLocalizaciones.includes('RECAMARA') ? 'RECAMARA' : (arrLocalizaciones.includes('CASA_OFICINA') ? 'CASA_OFICINA' : loc);
+      resolucion = arrLocalizaciones.includes('RECAMARA') ? 'RECAMARA' : (arrLocalizaciones.includes('CASA_OFICINA') ? 'CASA_OFICINA' : loc);
     } else if (loc === 'OFICINA') {
-        resolucion = arrLocalizaciones.includes('CASA_OFICINA') ? 'CASA_OFICINA' : loc;
+      resolucion = arrLocalizaciones.includes('CASA_OFICINA') ? 'CASA_OFICINA' : loc;
     }
 
     // Cuando choca y es una zona válida pedida por el motor
@@ -83,22 +107,31 @@ export default function MapaView() {
       {/* OVERLAY BANCA MOVIL */}
       {datosPantalla?.modo === 'banca' && <BancaMovilView />}
 
-      {/* BOTONES PARA ABRIR CAJONES */}
-      <div className="absolute top-20 left-4 z-50 flex flex-col space-y-2">
+      {/* BOTÓN PAUSA (Derecha) */}
+      <div className="absolute top-20 right-4 z-50">
+        <button
+          onClick={handlePausar}
+          className="bg-red-700 hover:bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-full font-pixel shadow opacity-90 border-2 border-red-500 text-sm active:scale-95 transition-transform">
+          ⏸
+        </button>
+      </div>
+
+      {/* BOTONES PARA ABRIR CAJONES (Izquierda) */}
+      <div className="absolute top-20 left-4 z-50 flex flex-col space-y-2 items-start">
         <button
           onClick={() => setShowMisiones(!showMisiones)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded-lg font-pixel shadow opacity-90 border border-indigo-400 text-left">
-          📋 Tareas Pendientes
+          className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg font-pixel shadow opacity-90 border border-indigo-400 text-xs">
+          📋 Pendientes
         </button>
         <button
           onClick={() => setShowMapaImg(!showMapaImg)}
-          className="bg-sky-600 hover:bg-sky-500 text-white px-2 py-1 rounded-lg font-pixel shadow opacity-90 border border-sky-400 text-left">
-          🗺️ Ver Mapa
+          className="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-lg font-pixel shadow opacity-90 border border-sky-400 text-xs">
+          🗺️ Croquis
         </button>
         <button
           onClick={() => resolverPromesa && resolverPromesa('p')}
-          className="bg-purple-600 hover:bg-purple-500 text-white px-2 py-1 rounded-lg font-pixel shadow opacity-90 border border-purple-400 text-left">
-          📱 Abrir Banca
+          className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg font-pixel shadow opacity-90 border border-purple-400 text-xs">
+          📱 Banca
         </button>
       </div>
 
@@ -133,7 +166,7 @@ export default function MapaView() {
 
       {/* DRAWER MAPA */}
       {showMapaImg && (
-        <div className="absolute top-20 right-4 z-50 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col pointer-events-auto">
+        <div className="absolute top-36 right-4 z-50 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col pointer-events-auto">
           <div className="flex justify-between items-center mb-2 px-2">
             <h3 className="text-center font-pixel text-sky-300">Croquis de la Zona</h3>
             <button onClick={() => setShowMapaImg(false)} className="text-slate-400 hover:text-white font-bold bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5 text-base leading-none">×</button>
@@ -142,6 +175,35 @@ export default function MapaView() {
             <img src={`${import.meta.env.BASE_URL}sprites/mapa_layout.png`} alt="Mapa" className="w-full h-full object-contain opacity-50" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = 'Sin textura'; }} />
           </div>
         </div>
+      )}
+
+      {/* MODAL PAUSA */}
+      {showPausa && (
+        <div className="absolute inset-0 z-[100] bg-black/80 flex flex-col items-center justify-center p-6 backdrop-blur-sm shadow-2xl">
+          <h2 className="text-4xl text-white font-bold mb-10 tracking-widest text-red-500 drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]">PAUSA</h2>
+          <div className="flex flex-col space-y-5 w-full max-w-xs font-pixel">
+            <button
+              onClick={handleReanudar}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xl py-4 rounded-xl border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition-all">
+              ▶️ Continuar
+            </button>
+            <button
+              onClick={handleCreditos}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xl py-4 rounded-xl border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 transition-all">
+              🎨 Créditos
+            </button>
+            <button
+              onClick={handleSalirVoluntario}
+              className="w-full bg-red-800 hover:bg-red-700 text-white text-xl py-4 rounded-xl border-b-4 border-red-950 active:border-b-0 active:translate-y-1 transition-all mt-6">
+              🚪 Salir Voluntariamente
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* OVERLAY DE CREDITOS (No destruye la escena 3D) */}
+      {showCreditosOverlay && (
+        <CreditosView onBack={() => setShowCreditosOverlay(false)} />
       )}
 
       {/* Renderizado 3D */}
@@ -167,16 +229,16 @@ export default function MapaView() {
 
       {/* Controles de Movimiento - Joystick */}
       <div className="absolute bottom-10 right-10 z-50 pointer-events-auto select-none opacity-80 hover:opacity-100 transition-opacity">
-        <Joystick 
+        <Joystick
           onChange={({ x, y }) => {
             setInputs(prev => ({
-               ...prev,
-               up: y < -0.5,
-               down: y > 0.5,
-               right: x > 0.5,
-               left: x < -0.5
+              ...prev,
+              up: y < -0.5,
+              down: y > 0.5,
+              right: x > 0.5,
+              left: x < -0.5
             }));
-          }} 
+          }}
         />
       </div>
     </div>

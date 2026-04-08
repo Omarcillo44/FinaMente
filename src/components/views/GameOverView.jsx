@@ -2,9 +2,37 @@ import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 
 export default function GameOverView() {
-  const { datosPantalla, cambiarEscena } = useGameStore();
+  const { datosPantalla, cambiarEscena, historialIA } = useGameStore();
+  const [analizando, setAnalizando] = React.useState(false);
 
   const isVictoria = datosPantalla?.victoria;
+
+  const solicitarAnalisisIA = async () => {
+      setAnalizando(true);
+
+      // Si el motor inyectó el JSON rico en historialIA, lo usamos. 
+      // Si por alguna razón está vacío, enviamos como fallback los stats (lo cual podría fallar en backend pero no reventamos el frontend).
+      const payload = historialIA || (datosPantalla?.stats ? datosPantalla.stats : datosPantalla);
+
+      try {
+          const response = await fetch('https://stag-improved-wildcat.ngrok-free.app/partida/analizar', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'ngrok-skip-browser-warning': 'true' // Evita intercepción de ngrok
+              },
+              body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) throw new Error('Error en la API de FinaMente');
+
+          const result = await response.json();
+          cambiarEscena('Retroalimentacion', { tipo: 'analisis_ia', mensaje: result.feedback });
+      } catch (error) {
+          console.error('Error al analizar partida:', error);
+          cambiarEscena('Retroalimentacion', { tipo: 'analisis_ia', mensaje: '⚠️ No se pudo obtener el análisis de la IA:\n\n' + error.message });
+      }
+  };
   return (
     <div className={`w-full h-full flex flex-col items-center justify-center text-white p-6 text-center font-pixel ${isVictoria ? 'bg-indigo-900' : 'bg-red-950'}`}>
       
@@ -38,9 +66,18 @@ export default function GameOverView() {
         )}
       </div>
 
-      <button onClick={cambiarEscena('Retroalimentacion')} className={`px-8 py-3 rounded font-pixel text-lg transition-colors ${isVictoria ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-700 hover:bg-red-600'}`}>
-        Continuar
+      <button 
+        onClick={solicitarAnalisisIA}
+        disabled={analizando}
+        className={`px-8 py-3 w-full max-w-xs rounded font-pixel text-lg transition-colors ${analizando ? 'bg-gray-600 cursor-not-allowed' : (isVictoria ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-700 hover:bg-red-600')}`}>
+        {analizando ? 'Analizando...' : 'Analizar con IA'}
       </button>
+      
+      {!analizando && (
+         <button onClick={() => cambiarEscena('Inicio')} className="mt-4 px-8 py-3 w-full max-w-xs rounded font-pixel text-sm bg-slate-800 hover:bg-slate-700 transition-colors border border-slate-600">
+           Volver al Menú
+         </button>
+      )}
     </div>
   );
 }

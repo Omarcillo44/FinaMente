@@ -18,3 +18,11 @@ export const detenerMusicaGlobal = () => {
   musicaFondo.pause();
   musicaFondo.currentTime = 0;
 };
+
+export const pausarMusicaGlobal = () => {
+  musicaFondo.pause();
+};
+
+export const reanudarMusicaGlobal = () => {
+  musicaFondo.play().catch(error => console.warn("Interacción requerida", error));
+};
