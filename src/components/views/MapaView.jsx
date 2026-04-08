@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, OrbitControls } from '@react-three/drei';
-import PersonajeController from './PersonajeController';
+import PersonajeController, { ZONAS_MAPA } from './PersonajeController';
 import Joystick from './Joystick';
 import SharedHUD from '../ui/SharedHUD';
 import BancaMovilView from './BancaMovilView';
@@ -54,11 +54,19 @@ export default function MapaView() {
   const arrLocalizaciones = datosPantalla?.localizaciones || [];
 
   const handleCollision = (loc) => {
-    // Cuando choca y es válida
-    if (arrLocalizaciones.includes(loc) || loc === 'Banca Móvil') {
-      setZonaBloqueada(loc);
-      const esBanca = loc === 'Banca Móvil' || loc === 'p';
-      if (resolverPromesa) resolverPromesa(esBanca ? 'p' : loc);
+    // Compatibilidad motor vs zonas mapeadas:
+    let resolucion = loc;
+    if (loc === 'CASA') {
+        resolucion = arrLocalizaciones.includes('RECAMARA') ? 'RECAMARA' : (arrLocalizaciones.includes('CASA_OFICINA') ? 'CASA_OFICINA' : loc);
+    } else if (loc === 'OFICINA') {
+        resolucion = arrLocalizaciones.includes('CASA_OFICINA') ? 'CASA_OFICINA' : loc;
+    }
+
+    // Cuando choca y es una zona válida pedida por el motor
+    if (arrLocalizaciones.includes(resolucion) || resolucion === 'Banca Móvil') {
+      setZonaBloqueada(loc); // Bloquear la zona física para que no vuelva a chocar inmediatamente
+      const esBanca = resolucion === 'Banca Móvil' || resolucion === 'p';
+      if (resolverPromesa) resolverPromesa(esBanca ? 'p' : resolucion);
     }
   };
 
@@ -76,7 +84,7 @@ export default function MapaView() {
       {datosPantalla?.modo === 'banca' && <BancaMovilView />}
 
       {/* BOTONES PARA ABRIR CAJONES */}
-      <div className="absolute top-16 left-4 z-50 flex flex-col space-y-2">
+      <div className="absolute top-20 left-4 z-50 flex flex-col space-y-2">
         <button
           onClick={() => setShowMisiones(!showMisiones)}
           className="bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded-lg font-pixel shadow opacity-90 border border-indigo-400 text-left">
@@ -101,7 +109,7 @@ export default function MapaView() {
 
       {/* DRAWER MISIONES */}
       {showMisiones && (
-        <div className="absolute top-32 left-4 z-50 w-64 bg-slate-800/95 border border-slate-600 rounded-xl p-4 text-white shadow-xl backdrop-blur">
+        <div className="absolute top-36 left-4 z-50 w-64 bg-slate-800/95 border border-slate-600 rounded-xl p-4 text-white shadow-xl backdrop-blur">
           <div className="flex justify-between items-start mb-3 border-b border-white/20 pb-2">
             <h3 className="text-xl text-indigo-300">Pendientes:</h3>
             <button onClick={() => setShowMisiones(false)} className="text-slate-400 hover:text-white font-bold bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5 text-base leading-none">×</button>
@@ -125,7 +133,7 @@ export default function MapaView() {
 
       {/* DRAWER MAPA */}
       {showMapaImg && (
-        <div className="absolute top-16 right-4 z-50 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col pointer-events-auto">
+        <div className="absolute top-20 right-4 z-50 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col pointer-events-auto">
           <div className="flex justify-between items-center mb-2 px-2">
             <h3 className="text-center font-pixel text-sky-300">Croquis de la Zona</h3>
             <button onClick={() => setShowMapaImg(false)} className="text-slate-400 hover:text-white font-bold bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5 text-base leading-none">×</button>
@@ -144,11 +152,11 @@ export default function MapaView() {
 
         <EscenarioMapa />
 
-        {/* Las zonas activas son aquellas que el Engine requiere (arrLocalizaciones) */}
+        {/* Las zonas activas ahora iteran sobre todas las posibles configuradas por ti */}
         <PersonajeController
-          position={posicionPersonaje || [131, 1, 127]}
+          position={posicionPersonaje || [131, 1, 138]}
           inputs={inputs}
-          activas={['Escuela', 'Supermercado', 'Hospital', 'Casa', 'Trabajo', 'Banco']}
+          activas={Object.keys(ZONAS_MAPA)}
           onCollision={handleCollision}
           zonaBloqueada={zonaBloqueada}
           onZonalibear={handleZonaliberada}

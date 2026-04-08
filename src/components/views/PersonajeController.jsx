@@ -5,13 +5,13 @@ import { useGameStore } from '../../store/gameStore';
 
 export const ZONAS_MAPA = {
   // Configuración de hitbox (x, z, radius)
-  'ESCUELA': { x: 50, z: 50, r: 15 },
-  'SUPERMERCADO': { x: 179, z: 123, r: 15 },
-  'CASA': { x: 131, z: 121, r: 15 },
-  'OFICINA': { x: 103, z: 48, r: 15 },
-  'CONSULTORIO': { x: 175, z: 56, r: 15 },
-  'TRANSPORTE': { x: 125, z: 64, r: 15 },
-  'CENTRO_COMERCIAL': { x: 46, z: 126, r: 15 }
+  'ESCUELA': { x: 50, z: 50, r: 10 },
+  'SUPERMERCADO': { x: 179, z: 123, r: 10 },
+  'CASA': { x: 131, z: 121, r: 10 },
+  'OFICINA': { x: 103, z: 48, r: 10 },
+  'CONSULTORIO': { x: 175, z: 56, r: 10 },
+  'TRANSPORTE': { x: 125, z: 64, r: 10 },
+  'CENTRO_COMERCIAL': { x: 46, z: 126, r: 10 }
 };
 
 export default function PersonajeController({ position = [0, 1, 0], inputs, activas = [], onCollision, zonaBloqueada, onZonalibear }) {
