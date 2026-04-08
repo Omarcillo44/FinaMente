@@ -25,6 +25,11 @@ export const useGameStore = create((set, get) => ({
     set({ historialIA: datos });
   },
 
+  personajeSeleccionado: 'Clemente',
+  setPersonajeSeleccionado: (nombre) => {
+    set({ personajeSeleccionado: nombre });
+  },
+
   // === SISTEMA DE COLISIÓN Y MEMORIA DE MAPA ===
   posicionPersonaje: [131, 1, 137], // Spawn inicial recuperado
   zonaBloqueada: null,

@@ -18,6 +18,7 @@ export default function PersonajeController({ position = [131, 1, 137], inputs, 
   const personajeRef = useRef();
   const materialRef = useRef();
   const { camera } = useThree();
+  const personajeSeleccionado = useGameStore(state => state.personajeSeleccionado) || 'Clemente';
 
   const posRef = useRef(new THREE.Vector3(...position));
 
@@ -39,7 +40,7 @@ export default function PersonajeController({ position = [131, 1, 137], inputs, 
       tex.minFilter = THREE.NearestFilter;
       if (materialRef.current) materialRef.current.map = tex;
     }, undefined, (err) => {
-      textureLoader.load(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`, (fallback) => {
+      textureLoader.load(`${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/down-0.png`, (fallback) => {
         fallback.magFilter = THREE.NearestFilter;
         fallback.minFilter = THREE.NearestFilter;
         if (materialRef.current) materialRef.current.map = fallback;
@@ -136,13 +137,14 @@ export default function PersonajeController({ position = [131, 1, 137], inputs, 
 
     if (prevFrame !== animState.current.frame || prevDir !== currentDir || prevMoving !== isMoving) {
       const textureUrl = isMoving
-        ? `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}/${currentDir}-${animState.current.frame}.png` : `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}-0.png`;
+        ? `${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/${currentDir}/${currentDir}-${animState.current.frame}.png` 
+        : `${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/${currentDir}-0.png`;
       applyTexture(textureUrl);
     }
   });
 
   useEffect(() => {
-    applyTexture(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`);
+    applyTexture(`${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/down-0.png`);
     return () => {
       // Guardar posición al desmontarse (irse a Batalla)
       useGameStore.getState().setPosicionPersonaje([posRef.current.x, posRef.current.y, posRef.current.z]);
