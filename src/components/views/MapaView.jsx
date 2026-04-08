@@ -10,12 +10,12 @@ const URL_MAPA = `${import.meta.env.BASE_URL}models/Mapa.glb`;
 function MapaModel() {
   const { scene } = useGLTF(URL_MAPA);
   // Rotado 90 grados (Math.PI / 2) en el eje Y
-  return <primitive object={scene} scale={1} rotation={[0, 0, 0]} />;
+  return <primitive object={scene} scale={1} rotation={[0, 3 * Math.PI / 2, 0]} />;
 }
 
 // Puedes editar estos valores para acomodar a tu gusto al personaje en el "verdadero centro" visual del mapa.
-const SPAWN_X = 0;
-const SPAWN_Z = 0;
+const SPAWN_X = 131;
+const SPAWN_Z = 127;
 const ALTURA_PISO = 1;
 
 export default function MapaView() {
@@ -86,7 +86,7 @@ export default function MapaView() {
       </div>
 
       {/* Renderizado 3D */}
-      <Canvas camera={{ position: [0, 5, 10], fov: 100 }}>
+      <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
         <color attach="background" args={['#0f172a']} />
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow />

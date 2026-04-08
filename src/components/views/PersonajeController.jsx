@@ -11,7 +11,7 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
   const posRef = useRef(new THREE.Vector3(...position));
 
   // Aumenté el tamaño del personaje temporalmente para asegurarme de que lo veas
-  const SIZE = 6;
+  const SIZE = 8;
   const MOVE_SPEED = 8.0;
 
   const animState = useRef({
@@ -84,9 +84,14 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
       // Billboarding estricto: El personaje siempre estará de cara a la cámara
       personajeRef.current.quaternion.copy(camera.quaternion);
     }
-    // Lógica RIGIDA de seguimiento para la cámara (Estilo Pokemon/Zelda)
-    // Fijamos un offset específico estricto para que la camara NUNCA varíe su ángulo.
-    const cameraOffset = new THREE.Vector3(0, 8, 12);
+    // --- AJUSTE DE INCLINACIÓN DE CÁMARA ---
+    // OFFSET_Y = Altura (valores altos = vista más desde arriba "top-down").
+    // OFFSET_Z = Distancia (valores altos = cámara más echada hacia atrás).
+    const OFFSET_Y = 16;
+    const OFFSET_Z = 18;
+
+    // Lógica RIGIDA de seguimiento para la cámara
+    const cameraOffset = new THREE.Vector3(0, OFFSET_Y, OFFSET_Z);
     const targetCameraPos = posRef.current.clone().add(cameraOffset);
 
     // Suavizado hacia la nueva posicion de la camara
