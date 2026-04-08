@@ -142,7 +142,20 @@ export default function MapaView() {
         <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} />
       </Canvas>
 
-      <Joystick onMove={(moveState) => setInputs(moveState)} />
+      {/* Controles de Movimiento - Joystick */}
+      <div className="absolute bottom-10 right-10 z-50 pointer-events-auto select-none opacity-80 hover:opacity-100 transition-opacity">
+        <Joystick 
+          onChange={({ x, y }) => {
+            setInputs(prev => ({
+               ...prev,
+               up: y > 0.5,
+               down: y < -0.5,
+               right: x > 0.5,
+               left: x < -0.5
+            }));
+          }} 
+        />
+      </div>
     </div>
   );
 }
