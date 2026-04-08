@@ -10,7 +10,12 @@ export default function SeleccionPersonajesView() {
     cambiarEscena('SeleccionDificultad');
   };
   return (
-    <div className="w-full h-full flex flex-col items-center bg-gray-800 text-white p-6">
+    <div className="w-full h-full flex flex-col items-center bg-gray-800 text-white p-6 relative">
+      <button 
+        onClick={() => cambiarEscena('Inicio')}
+        className="absolute top-6 left-6 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded font-pixel text-sm text-gray-300 border border-slate-500 z-10">
+        &lt; Volver
+      </button>
       <h2 className="text-3xl font-pixel mt-10 mb-6">Selecciona tu Personaje</h2>
       <div className="flex-1 flex w-full items-center justify-center space-x-6">
         {/* Placeholder para Sprite 1 */}

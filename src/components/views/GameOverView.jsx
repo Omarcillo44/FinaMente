@@ -38,8 +38,8 @@ export default function GameOverView() {
         )}
       </div>
 
-      <button onClick={() => window.location.reload()} className={`px-8 py-3 rounded font-pixel text-lg transition-colors ${isVictoria ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-700 hover:bg-red-600'}`}>
-        Volver a Jugar
+      <button onClick={cambiarEscena('Retroalimentacion')} className={`px-8 py-3 rounded font-pixel text-lg transition-colors ${isVictoria ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-700 hover:bg-red-600'}`}>
+        Continuar
       </button>
     </div>
   );

@@ -7,13 +7,34 @@ import SharedHUD from '../ui/SharedHUD';
 import BancaMovilView from './BancaMovilView';
 
 // ESCENARIO GENERICO DE FALLBACK
-const URL_ESCENARIO_FALLBACK = `${import.meta.env.BASE_URL}models/Escenario_Casa.glb`;
+const URL_ESCENARIO_FALLBACK = `${import.meta.env.BASE_URL}models/Escenario_Recamara.glb`;
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
+function FallbackScene() {
+  const { scene } = useGLTF(URL_ESCENARIO_FALLBACK);
+  return <primitive object={scene} />;
+}
 
 function EscenarioDinamico({ localizacion }) {
   // Convertimos "CASA_OFICINA" a "Casa_Oficina", "ESCUELA" a "Escuela"
   const safeLoc = localizacion 
     ? localizacion.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join('_')
-    : 'Casa';
+    : 'Recamara';
     
   const URL = `${import.meta.env.BASE_URL}models/Escenario_${safeLoc}.glb`;
 
@@ -175,9 +196,15 @@ export default function BatallaView() {
         <ambientLight intensity={0.8} />
         <directionalLight position={[10, 10, 5]} intensity={0.8} />
 
-        <Suspense fallback={null}>
-          <EscenarioDinamico localizacion={loc} />
-        </Suspense>
+        <ErrorBoundary fallback={
+          <Suspense fallback={null}>
+            <FallbackScene />
+          </Suspense>
+        }>
+          <Suspense fallback={null}>
+            <EscenarioDinamico localizacion={loc} />
+          </Suspense>
+        </ErrorBoundary>
 
         {/* Texto 3D del Gasto individual */}
         {mode !== 'seleccionar_gasto' && datosPantalla?.gasto && (

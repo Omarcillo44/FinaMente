@@ -2,8 +2,11 @@ import React from 'react';
 import { PerfilEnum } from '../../core/motor/Enums';
 import { MotorJuego } from '../../core/motor/MotorJuego';
 import { ReactMotorAdapter } from '../../core/ReactMotorAdapter';
+import { useGameStore } from '../../store/gameStore';
 
 export default function SeleccionDificultadView() {
+  const cambiarEscena = useGameStore(state => state.cambiarEscena);
+  
   const iniciarYArrancarMotor = async (perfil) => {
     // 1. Instanciar el Adaptador "puente"
     const adaptador = new ReactMotorAdapter();
@@ -16,8 +19,13 @@ export default function SeleccionDificultadView() {
     motor.iniciarJuego(perfil);
   };
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-white p-6 text-center">
-      <h2 className="text-3xl font-pixel mb-10 text-orange-400">Selecciona la Dificultad</h2>
+    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-white p-6 text-center relative overflow-y-auto">
+      <button 
+        onClick={() => cambiarEscena('SeleccionPersonaje')}
+        className="absolute md:top-6 md:left-6 top-3 left-3 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded font-pixel text-sm text-gray-300 border border-slate-600 z-10">
+        &lt; Volver
+      </button>
+      <h2 className="text-3xl font-pixel mt-16 md:mt-0 mb-10 text-orange-400">Selecciona la Dificultad</h2>
       <div className="flex flex-col space-y-6 w-full max-w-sm">
         <button
           onClick={() => iniciarYArrancarMotor(PerfilEnum.DEPENDIENTE)}
