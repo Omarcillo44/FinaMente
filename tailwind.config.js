@@ -2,10 +2,14 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}", // <-- ESTA LÍNEA ES VITAL
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        pixel: ['BoldPixel', 'sans-serif'],
+      }
+    },
   },
   plugins: [],
 }
