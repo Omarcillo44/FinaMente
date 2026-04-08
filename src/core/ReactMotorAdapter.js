@@ -24,7 +24,7 @@ export class ReactMotorAdapter {
     }
 
     async mostrarSelectorGastosLocalizacion(localizacion, gastos) {
-        return await useGameStore.getState().solicitarInteraccion('Mapa', { modo: 'gastos', localizacion, gastos });
+        return await useGameStore.getState().solicitarInteraccion('Batalla', { modo: 'seleccionar_gasto', localizacion, gastos });
     }
 
     async mostrarMenuGasto(gasto, estadoVirtual, puedeIgnorar, tieneDeuda) {

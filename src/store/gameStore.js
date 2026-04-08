@@ -20,6 +20,12 @@ export const useGameStore = create((set, get) => ({
     set({ headers: nuevosHeaders });
   },
 
+  // === SISTEMA DE COLISIÓN Y MEMORIA DE MAPA ===
+  posicionPersonaje: [131, 1, 127], // Spawn inicial recuperado
+  zonaBloqueada: null,
+  setPosicionPersonaje: (pos) => set({ posicionPersonaje: pos }),
+  setZonaBloqueada: (zona) => set({ zonaBloqueada: zona }),
+
   // === INTEGRACIÓN CON EL MOTOR JUEGO ===
   resolverPromesa: null,  
 

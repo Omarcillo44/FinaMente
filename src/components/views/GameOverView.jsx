@@ -25,14 +25,14 @@ export default function GameOverView() {
         )}
         {datosPantalla?.stats && (
             <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                <p>Salud Mental (HP):</p><p className="font-pixel text-right">{datosPantalla.stats.hp}</p>
+                <p>Salud (HP):</p><p className="font-pixel text-right">{datosPantalla.stats.hp}</p>
                 <p>Calidad de Vida:</p><p className="font-pixel text-right">{datosPantalla.stats.cv}</p>
                 <p>Score Crediticio:</p><p className="font-pixel text-right text-emerald-300">{datosPantalla.stats.score}</p>
             </div>
         )}
         {isVictoria && (
             <div className="mt-4 grid grid-cols-2 gap-2 text-sm border-t border-white/20 pt-4">
-                <p>Salud Mental (HP):</p><p className="font-pixel text-right">{datosPantalla.hp}</p>
+                <p>Salud (HP):</p><p className="font-pixel text-right">{datosPantalla.hp}</p>
                 <p>Score Crediticio:</p><p className="font-pixel text-right text-emerald-300">{datosPantalla.score}</p>
             </div>
         )}

@@ -1,18 +1,27 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useGameStore } from '../../store/gameStore';
 
-export default function PersonajeController({ position = [0, 1, 0], inputs }) {
+export const ZONAS_MAPA = {
+  // Configuración de hitbox (x, z, radius)
+  'Escuela': { x: 100, z: 100, r: 15 },
+  'Supermercado': { x: -80, z: -50, r: 15 },
+  'Banco': { x: 80, z: -80, r: 15 },
+  'Casa': { x: 0, z: 0, r: 15 },
+  'Trabajo': { x: -50, z: 100, r: 15 },
+  'Hospital': { x: 50, z: 50, r: 15 }
+};
+
+export default function PersonajeController({ position = [0, 1, 0], inputs, activas = [], onCollision, zonaBloqueada, onZonalibear }) {
   const personajeRef = useRef();
   const materialRef = useRef();
-  const { camera } = useThree(); // Quitamos "controls" porque vamos a forzar una cámara rígida
+  const { camera } = useThree(); 
 
-  // Posición interna calculada en el bucle
   const posRef = useRef(new THREE.Vector3(...position));
 
-  // Aumenté el tamaño del personaje temporalmente para asegurarme de que lo veas
   const SIZE = 8;
-  const MOVE_SPEED = 8.0;
+  const MOVE_SPEED = 20.0;
 
   const animState = useRef({
     direccion: 'down',
@@ -24,16 +33,11 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
   const textureLoader = useMemo(() => new THREE.TextureLoader(), []);
 
   const applyTexture = (url) => {
-    textureLoader.load(
-      url,
-      (tex) => {
+    textureLoader.load(url, (tex) => {
         tex.magFilter = THREE.NearestFilter;
         tex.minFilter = THREE.NearestFilter;
         if (materialRef.current) materialRef.current.map = tex;
-      },
-      undefined,
-      (err) => {
-        // Fallback genérico a pixil-frame-0.png si no se encuentra
+      }, undefined, (err) => {
         textureLoader.load(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`, (fallback) => {
           fallback.magFilter = THREE.NearestFilter;
           fallback.minFilter = THREE.NearestFilter;
@@ -49,26 +53,10 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
     let isMoving = false;
     let currentDir = animState.current.direccion;
 
-    if (inputs.up) {
-      moveZ -= 1;
-      currentDir = 'up';
-      isMoving = true;
-    }
-    if (inputs.down) {
-      moveZ += 1;
-      currentDir = 'down';
-      isMoving = true;
-    }
-    if (inputs.left) {
-      moveX -= 1;
-      currentDir = 'left';
-      isMoving = true;
-    }
-    if (inputs.right) {
-      moveX += 1;
-      currentDir = 'right';
-      isMoving = true;
-    }
+    if (inputs.up) { moveZ -= 1; currentDir = 'up'; isMoving = true; }
+    if (inputs.down) { moveZ += 1; currentDir = 'down'; isMoving = true; }
+    if (inputs.left) { moveX -= 1; currentDir = 'left'; isMoving = true; }
+    if (inputs.right) { moveX += 1; currentDir = 'right'; isMoving = true; }
 
     if (moveX !== 0 || moveZ !== 0) {
       const length = Math.sqrt(moveX * moveX + moveZ * moveZ);
@@ -81,29 +69,49 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
 
     if (personajeRef.current) {
       personajeRef.current.position.copy(posRef.current);
-      // Billboarding estricto: El personaje siempre estará de cara a la cámara
-      personajeRef.current.quaternion.copy(camera.quaternion);
+      // Fija la rotación para evitar giro 3D (pitch hacia atrás para mirar a la cámara isómetrica)
+      personajeRef.current.rotation.set(-Math.PI / 4, 0, 0);
     }
-    // --- AJUSTE DE INCLINACIÓN DE CÁMARA ---
-    // OFFSET_Y = Altura (valores altos = vista más desde arriba "top-down").
-    // OFFSET_Z = Distancia (valores altos = cámara más echada hacia atrás).
-    const OFFSET_Y = 16;
-    const OFFSET_Z = 18;
+    
+    const divLog = document.getElementById('debug-coords');
+    if (divLog && (isMoving || prevFrame === 0)) {
+        divLog.innerText = `X: ${Math.round(posRef.current.x)} | Z: ${Math.round(posRef.current.z)}`;
+    }
 
-    // Lógica RIGIDA de seguimiento para la cámara
+    const OFFSET_Y = 24;
+    const OFFSET_Z = 28;
     const cameraOffset = new THREE.Vector3(0, OFFSET_Y, OFFSET_Z);
     const targetCameraPos = posRef.current.clone().add(cameraOffset);
-
-    // Suavizado hacia la nueva posicion de la camara
     camera.position.lerp(targetCameraPos, 0.1);
-    // Forzamos a la camara a mirar siempre paralelamente al mismo punto (jugador)
     camera.lookAt(posRef.current.clone().add(new THREE.Vector3(0, 1, 0)));
 
-    // 3. Lógica de Animación
+    // --- LOGICA DE COLISIÓN Y DESBLOQUEO ---
+    let enCualquierArea = false;
+    activas.forEach(loc => {
+      const zona = ZONAS_MAPA[loc];
+      if (zona) {
+        const dist = Math.hypot(posRef.current.x - zona.x, posRef.current.z - zona.z);
+        if (dist <= zona.r) {
+           enCualquierArea = true;
+           if (zonaBloqueada !== loc) {
+             onCollision(loc);
+           }
+        }
+      }
+    });
+
+    // Si salió de la zona bloqueada actual (radio extendido para dar changüí)
+    if (zonaBloqueada) {
+      const zona = ZONAS_MAPA[zonaBloqueada];
+      if (zona && Math.hypot(posRef.current.x - zona.x, posRef.current.z - zona.z) > zona.r + 5) {
+         onZonalibear(); // Libera la zona al alejarse un poco
+      }
+    }
+
+    // --- ANIMACIÓN ---
     const prevDir = animState.current.direccion;
     const prevMoving = animState.current.isMoving;
     const prevFrame = animState.current.frame;
-
     animState.current.direccion = currentDir;
     animState.current.isMoving = isMoving;
 
@@ -118,24 +126,19 @@ export default function PersonajeController({ position = [0, 1, 0], inputs }) {
       animState.current.timeAccumulator = 0;
     }
 
-    const currentFrame = animState.current.frame;
-    const isFrameChanged = prevFrame !== currentFrame;
-    const isStateChanged = prevDir !== currentDir || prevMoving !== isMoving;
-
-    if (isFrameChanged || isStateChanged) {
-      // Intenta cargar la textura con la estructura que definimos
+    if (prevFrame !== animState.current.frame || prevDir !== currentDir || prevMoving !== isMoving) {
       const textureUrl = isMoving
-        ? `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}/${currentDir}-${currentFrame}.png`
-        : `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}-0.png`;
-
+        ? `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}/${currentDir}-${animState.current.frame}.png` : `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}-0.png`;
       applyTexture(textureUrl);
     }
   });
 
   useEffect(() => {
-    // Para asegurarnos de que aparezca, forzamos que al iniciar busque down-0.png (o fallback)
     applyTexture(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      // Guardar posición al desmontarse (irse a Batalla)
+      useGameStore.getState().setPosicionPersonaje([posRef.current.x, posRef.current.y, posRef.current.z]);
+    };
   }, []);
 
   return (

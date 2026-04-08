@@ -3,102 +3,187 @@ import { Canvas } from '@react-three/fiber';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 import { useGameStore } from '../../store/gameStore';
 import Texto2D from '../ui/Texto2D';
+import SharedHUD from '../ui/SharedHUD';
 
-// const URL_ESCENARIO = '/models/Escenario_Escuela.glb';
-const URL_ESCENARIO = `${import.meta.env.BASE_URL}models/Escenario_Escuela.glb`;
+// ESCENARIO GENERICO DE FALLBACK
+const URL_ESCENARIO_FALLBACK = `${import.meta.env.BASE_URL}models/Escenario_Escuela.glb`;
 
-function EscenarioEscuelaModel() {
-  // 2. El Hook carga el modelo usando la variable
-  const { scene } = useGLTF(URL_ESCENARIO);
-  return <primitive object={scene} scale={1} />;
+function EscenarioDinamico({ localizacion }) {
+  // Limpiamos el nombre para que coincida con el archivo, ej. "Banca Móvil" -> "Banca_Movil" (o usar switch)
+  const safeLoc = localizacion ? localizacion.replace(/ /g, '_') : 'Escuela';
+  const URL = `${import.meta.env.BASE_URL}models/Escenario_${safeLoc}.glb`;
+
+  // Fallback pattern (Idealmente con ErrorBoundary, aquí usamos un preload hack o directo a Fallback)
+  // Por simplicidad, intentamos cargar. Si castea error, el parent deberia atraparlo.
+  // Por ahora lo forzaremos al Fallback temporal para prevenir White Screen si no existe:
+  // (Descomenta la linea siguiente para habilitar la carga dinámica real cuando tengas los modelos)
+  // const { scene } = useGLTF(URL); 
+  
+  const { scene } = useGLTF(URL_ESCENARIO_FALLBACK);
+  
+  return <primitive object={scene} />;
 }
 
 export default function BatallaView() {
-  const { datosPantalla, resolverPromesa, headers } = useGameStore();
-  const modo = datosPantalla?.modo;
-  const gastoObj = datosPantalla?.gasto;
+  const { datosPantalla, resolverPromesa } = useGameStore();
+  
+  // Extraemos la información del motor
+  const mode = datosPantalla?.modo; // 'seleccionar_gasto' o 'combate_individual' o 'msi' ...
+  const loc = datosPantalla?.localizacion || 'Combate';
+
+  // Sprites
+  const EmployeeSprite = `${import.meta.env.BASE_URL}sprites/empleado/right-0.png`; // Pose de batalla (derecha)
+  const EnemySprite = `${import.meta.env.BASE_URL}sprites/enemigo_placeholder.png`;
 
   return (
-    <div className="w-full h-full relative bg-slate-900">
-      {/* Contenedor del Hub/UI (HP ENCABEZADO) */}
-      <div className="absolute top-0 left-0 w-full p-4 z-10 pointer-events-none flex justify-between items-start">
-        {/* HP Jugador */}
-        <div className="w-1/3">
-          <p className="text-white font-pixel text-xs mb-1 drop-shadow-md">Tú (HP: {headers.hp})</p>
-          <div className="h-3 w-full bg-slate-700 border-2 border-slate-800 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 transition-all" style={{ width: `${Math.max(0, headers.hp)}%`}}></div>
-          </div>
+    <div className="w-full h-full relative bg-black font-pixel">
+      
+      {/* SHARD HUD ARRIBA */}
+      <SharedHUD />
+
+      {/* --- CAPA 2D UI SUPERPUESTA AL CANVAS 3D --- */}
+      <div className="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between">
+        
+        {/* Cabecera info (Abajo del HUD) */}
+        <div className="mt-20 px-6 flex justify-between items-start w-full">
+           <h2 className="bg-slate-900/80 px-6 py-3 rounded-lg text-red-400 font-bold text-2xl shadow-lg border border-red-900/50">
+             🔥 {loc.toUpperCase()}
+           </h2>
         </div>
 
-        <div className="bg-red-600 text-white font-pixel px-3 py-1 rounded shadow drop-shadow-md text-sm">
-          VS
-        </div>
+        {/* Zona Central de Sprites 2D Flotantes */}
+        <div className="flex-1 flex items-end justify-between px-10 md:px-32 pb-32">
+            
+            {/* Personaje (Izquierda) */}
+            <div className="flex flex-col items-center">
+               <img src={EmployeeSprite} alt="Jugador" className="w-48 h-48 sm:w-64 sm:h-64 object-contain animate-bounce [animation-duration:1.5s]" 
+                    onError={(e)=>{ e.target.src=''; e.target.className='w-32 h-32 bg-blue-500 rounded-full animate-bounce'; }} />
+               <div className="mt-2 text-blue-300 font-bold bg-black/50 px-4 py-1 rounded">TÚ</div>
+            </div>
 
-        {/* Info Enemigo */}
-        <div className="w-1/3 items-end flex flex-col text-right">
-          <p className="text-white font-pixel text-xs mb-1 drop-shadow-md">{gastoObj?.nombre || 'Gasto'}</p>
-          <p className="text-red-400 font-pixel text-sm drop-shadow-md">${gastoObj?.monto || 0}</p>
-        </div>
-      </div>
+            {/* Enemigos (Derecha) */}
+            <div className="flex items-center space-x-6">
+                
+                {mode === 'seleccionar_gasto' && datosPantalla.gastos && datosPantalla.gastos.map((g, idx) => (
+                    <div key={idx} className="flex flex-col items-center pointer-events-auto cursor-pointer hover:scale-110 transition-transform"
+                         onClick={() => resolverPromesa && resolverPromesa(`${idx + 1}`)}>
+                        {/* Puedes poner un indicador de ataque (un cursor "Fight") */}
+                        <div className="text-white text-xs px-2 py-1 bg-red-600 mb-1 rounded font-bold animate-pulse">Atacar</div>
+                        <img src={EnemySprite} alt={g.nombre} className="w-40 h-40 sm:w-56 sm:h-56 object-contain drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]" 
+                             onError={(e)=>{ e.target.src=''; e.target.className='w-32 h-32 bg-red-500 rounded-full drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]'; }} />
+                        <div className="mt-2 text-red-200 bg-black/80 px-3 py-2 rounded text-center border border-red-500 w-full">
+                            <p className="font-bold">{g.nombre}</p>
+                            <p className="text-red-400 text-sm">${g.monto}</p>
+                        </div>
+                    </div>
+                ))}
 
-      {/* Controles de Batalla Abajo */}
-      <div className="absolute bottom-0 left-0 w-full z-10 p-4 pb-20 pointer-events-none">
-        <div className="bg-slate-800/90 backdrop-blur border border-slate-700 rounded-xl p-4 flex flex-col gap-3 pointer-events-auto shadow-xl">
-          <p className="text-slate-300 text-sm font-pixel text-center mb-1">
-            {modo === 'msi' ? '¿A cuántos meses?' : modo === 'retiroObligatorio' ? '¿Deseas retirar efectivo para este gasto obligatorio?' : '¿Cómo deseas pagar?'}
-          </p>
-          <div className="grid grid-cols-2 gap-2 font-pixel">
-            {modo === 'msi' ? (
-              datosPantalla.opcionesCuotas?.map(cuota => (
-                <button key={cuota} onClick={() => resolverPromesa(cuota)} className="bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg text-sm">{cuota} Meses</button>
-              ))
-            ) : modo === 'retiroObligatorio' ? (
-              <>
-                <button onClick={() => resolverPromesa({ monto: gastoObj?.monto })} className="bg-rose-600 hover:bg-rose-500 text-white py-2 rounded-lg text-sm">Disponer Efectivo</button>
-                <button onClick={() => resolverPromesa(null)} className="bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-lg text-sm">Rendirse</button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => resolverPromesa('d')} className="bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-sm">
-                  Débito (${datosPantalla.estadoVirtual?.efectivoDisponible})
-                </button>
-                <button onClick={() => resolverPromesa('t')} className="bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg text-sm">
-                  Crédito (${datosPantalla.estadoVirtual?.creditoDisponible})
-                </button>
-                <button onClick={() => resolverPromesa('m')} className="bg-purple-600 hover:bg-purple-500 text-white py-2 rounded-lg text-sm">MSI</button>
-                {datosPantalla?.puedeIgnorar && (
-                  <button onClick={() => resolverPromesa('i')} className="bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-lg text-sm">Ignorar</button>
+                {mode !== 'seleccionar_gasto' && datosPantalla?.gasto && (
+                    <div className="flex flex-col items-center">
+                        <img src={EnemySprite} alt={datosPantalla.gasto.nombre} className="w-48 h-48 sm:w-64 sm:h-64 object-contain drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]" 
+                             onError={(e)=>{ e.target.src=''; e.target.className='w-40 h-40 bg-red-600 rounded-full drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]'; }} />
+                        <div className="mt-2 text-red-200 bg-black/80 px-4 py-2 rounded text-center border border-red-500">
+                            <p className="font-bold text-lg">{datosPantalla.gasto.nombre}</p>
+                            <p className="text-red-400 font-bold">${datosPantalla.gasto.monto}</p>
+                        </div>
+                    </div>
                 )}
-                <button onClick={() => resolverPromesa('p')} className="bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg text-sm col-span-2">Banca Móvil</button>
-              </>
-            )}
+            </div>
+        </div>
+
+        {/* Panel de Decisiones (Abajo) */}
+        <div className="w-full bg-slate-900 border-t-4 border-indigo-900 p-6 pointer-events-auto flex flex-col md:flex-row shadow-[0_-10px_30px_rgba(0,0,0,0.8)] z-20">
+          <div className="flex-1 text-slate-300 pr-6 mb-4 md:mb-0 hidden md:block">
+             <h3 className="text-indigo-400 text-lg font-bold mb-2">Mensaje del Sistema</h3>
+             {mode === 'seleccionar_gasto' && <p>Múltiples gastos detectados en la zona. Selecciona a qué obligación financiera deseas enfrentarte o huye.</p>}
+             {mode !== 'seleccionar_gasto' && datosPantalla?.gasto && <p>Te enfrentas a un cobro inminente. Elige tu método de resolución asumiendo las consecuencias de cada opción (Efectivo disponible o Deudas a Crédito).</p>}
+          </div>
+
+          <div className="flex-1 grid grid-cols-2 gap-3 min-w-[300px]">
+             
+             {/* BOTONES SI ESTAMOS EN SELECCION MULTIPLE */}
+             {mode === 'seleccionar_gasto' && (
+                 <>
+                   <div className="col-span-2 text-center text-sm text-gray-400 mb-2">Presiona sobre un Enemigo para Atacar</div>
+                   <button onClick={() => resolverPromesa && resolverPromesa('s')} className="col-span-2 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg transition-transform active:scale-95 border border-slate-500 shadow-md">
+                      🏃 HUIDA TÁCTICA (Salir del lugar)
+                   </button>
+                 </>
+             )}
+
+             {/* BOTONES SI ESTAMOS EN COMBATE INDIVIDUAL ESTANDAR */}
+             {mode !== 'seleccionar_gasto' && !datosPantalla?.opcionesCuotas && datosPantalla?.gasto && (
+                 <>
+                  <button onClick={() => resolverPromesa && resolverPromesa('d')} className="py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg text-emerald-100 font-bold shadow transition-transform active:scale-95 border border-emerald-500 flex flex-col items-center justify-center">
+                    <span>💵 Pagar Débito</span>
+                    <span className="text-xs font-normal opacity-70 mt-1">Usa Efectivo Disponible</span>
+                  </button>
+
+                  <button onClick={() => resolverPromesa && resolverPromesa('t')} className="py-3 bg-indigo-700 hover:bg-indigo-600 rounded-lg text-indigo-100 font-bold shadow transition-transform active:scale-95 border border-indigo-500 flex flex-col items-center justify-center">
+                    <span>💳 Pagar TC</span>
+                    <span className="text-xs font-normal opacity-70 mt-1">Aumenta Saldo Insoluto</span>
+                  </button>
+
+                  {/* Ignorar (si se permite) o MSI (si aplican) */}
+                  {datosPantalla?.puedeIgnorar ? (
+                    <button onClick={() => resolverPromesa && resolverPromesa('i')} className="py-3 col-span-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-lg shadow border border-slate-600 transition-transform active:scale-95">
+                       🛡️ Ignorar Gasto (-20 HP)
+                    </button>
+                  ) : (
+                    <button onClick={() => resolverPromesa && resolverPromesa('m')} className="py-3 col-span-2 bg-purple-700 hover:bg-purple-600 text-purple-100 font-bold rounded-lg shadow border border-purple-500 transition-transform active:scale-95">
+                       🌟 Negociar a M.S.I.
+                    </button>
+                  )}
+                 </>
+             )}
+
+             {/* BOTONES SI ESTAMOS ELIGIENDO MSI */}
+             {mode === 'msi' && datosPantalla?.opcionesCuotas && (
+                 <div className="col-span-2 flex flex-col space-y-2">
+                     <p className="text-center text-purple-300 font-bold mb-2">Selecciona Mensualidades:</p>
+                     {datosPantalla.opcionesCuotas.map(cuota => (
+                        <button key={cuota} onClick={() => resolverPromesa && resolverPromesa(cuota.toString())} className="py-3 bg-purple-700 hover:bg-purple-600 rounded-lg font-bold">
+                            {cuota} Meses
+                        </button>
+                     ))}
+                     <button onClick={() => resolverPromesa && resolverPromesa('c')} className="py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-bold text-gray-300">
+                        Cancelar Negociación
+                     </button>
+                 </div>
+             )}
+
+             {/* BOTONES SI DEBE RETIRAR DE TARJETA OBLIGATORIAMENTE */}
+             {mode === 'retiroObligatorio' && (
+                 <div className="col-span-2">
+                     <button onClick={() => resolverPromesa && resolverPromesa('y')} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-lg font-bold mb-2">
+                         Pagar Asumiendo Comisión ({datosPantalla.maxRetiro})
+                     </button>
+                     <button onClick={() => resolverPromesa && resolverPromesa('n')} className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded-lg font-bold">
+                         Aceptar Game Over
+                     </button>
+                 </div>
+             )}
           </div>
         </div>
+
       </div>
 
-      {/* Renderizado 3D */}
-      <Canvas camera={{ position: [0, 2, 8], fov: 45 }}>
-        <color attach="background" args={['#0f172a']} />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 10, 5]} intensity={1.5} />
+      {/* --- CAPA FONDO 3D (CANVAS) --- */}
+      <Canvas camera={{ position: [0, 5, 10], fov: 90 }} className="absolute inset-0 z-0 opacity-40">
+        <ambientLight intensity={0.4} />
+        <directionalLight position={[10, 10, 5]} intensity={0.8} />
+
         <Suspense fallback={null}>
-          <EscenarioEscuelaModel />
-          {/* Mostramos Texto2D flotando en el entorno del jefe */}
-          {gastoObj && (
-            <Texto2D 
-              text={gastoObj.nombre}
-              position={[0, 4, 0]} 
-              color="red" 
-              fontSize={1.5} 
-            />
-          )}
+           <EscenarioDinamico localizacion={loc} />
         </Suspense>
-        {/* Usamos OrbitControls temporalmente para ver la escena en el demo */}
-        <OrbitControls enablePan={false} maxPolarAngle={Math.PI / 2 + 0.1} minPolarAngle={Math.PI / 4} enableZoom={false} />
+
+        {/* Texto 3D del Gasto individual */}
+        {mode !== 'seleccionar_gasto' && datosPantalla?.gasto && (
+           <Texto2D texto={`!${datosPantalla.gasto.nombre}!`} posicion={[0, 5, 0]} />
+        )}
+
+        <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={2} />
       </Canvas>
     </div>
   );
 }
-
-// 3. Precargas EXACTAMENTE la misma variable aquí abajo para evitar errores 404
-useGLTF.preload(URL_ESCENARIO);
