@@ -2,6 +2,7 @@ import { Consola } from './ui/Consola.js';
 import { ControladorVista } from './ui/ControladorVista.js';
 import { MotorJuego } from '../../motor/MotorJuego.js';
 import { PerfilEnum } from '../../motor/Enums.js';
+import { solicitarAnalisisIA } from '../../apiUtils.js';
 
 window.addEventListener('DOMContentLoaded', async () => {
     const consola = new Consola();
@@ -12,17 +13,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     motor.onGameOver = async (datos) => {
         vista.mostrarCargandoAnalisis();
         try {
-            const response = await fetch('https://stag-improved-wildcat.ngrok-free.app/partida/analizar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(datos)
-            });
-
-            if (!response.ok) throw new Error('Error en la API de FinaMente');
-
-            const result = await response.json();
+            const result = await solicitarAnalisisIA(datos);
             vista.mostrarFeedbackAPI(result.feedback);
         } catch (error) {
             console.error('Error al analizar partida:', error);

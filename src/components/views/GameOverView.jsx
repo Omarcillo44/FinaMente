@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../../store/gameStore';
+import { solicitarAnalisisIA } from '../../core/apiUtils';
 
 export default function GameOverView() {
   const { datosPantalla, cambiarEscena, historialIA } = useGameStore();
@@ -14,19 +15,8 @@ export default function GameOverView() {
       // Si por alguna razón está vacío, enviamos como fallback los stats (lo cual podría fallar en backend pero no reventamos el frontend).
       const payload = historialIA || (datosPantalla?.stats ? datosPantalla.stats : datosPantalla);
 
-      try {
-          const response = await fetch('https://stag-improved-wildcat.ngrok-free.app/partida/analizar', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'ngrok-skip-browser-warning': 'true' // Evita intercepción de ngrok
-              },
-              body: JSON.stringify(payload)
-          });
-
-          if (!response.ok) throw new Error('Error en la API de FinaMente');
-
-          const result = await response.json();
+        try {
+          const result = await solicitarAnalisisIA(payload);
           cambiarEscena('Retroalimentacion', { tipo: 'analisis_ia', mensaje: result.feedback });
       } catch (error) {
           console.error('Error al analizar partida:', error);

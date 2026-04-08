@@ -313,18 +313,14 @@ function App() {
   // 2. Definir Callbacks de Integración
   useEffect(() => {
     if (motorRef.current) {
+        // Envío de datos a la IA con sistema de Fallback
         motorRef.current.onGameOver = async (datos) => {
             vista.mostrarCargandoAnalisis();
             try {
-                const response = await fetch('https://stag-improved-wildcat.ngrok-free.app/partida/analizar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
-                const res = await response.json();
-                vista.mostrarFeedbackAPI(res.feedback);
-            } catch (e) {
-                console.error("Error en API", e);
+                const result = await solicitarAnalisisIA(datos);
+                vista.mostrarFeedbackAPI(result.feedback);
+            } catch (error) {
+                console.error('Error al analizar partida:', error);
             }
         };
 
@@ -545,8 +541,19 @@ Además de `iniciarJuego(perfil)`, el motor expone:
 
 | Método | Parámetros | Uso |
 |--------|------------|-----|
-| `finalizarPartidaVoluntaria()` | ninguno | Termina la partida anticipadamente (cuando el usuario presiona "salir"). |
-| `actualizarUIHeaders()` | ninguno | Fuerza una actualización del HUD (útil si React necesita refrescar después de una animación). |
+| `finalizarPartidaVoluntaria()` | ninguno | Termina la partida anticipadamente. Dispara el evento `onGameOver`. |
+| `actualizarUIHeaders()` | ninguno | Fuerza una actualización del HUD. |
+
+### 10. Gestión de Eventos de Finalización (Callbacks)
+
+El motor utiliza el callback `onGameOver(historialJSON)` para notificar el fin de la simulación. **Es fundamental entender que este evento no es exclusivo de la salida voluntaria**, sino que se dispara en todos los puntos de terminación:
+
+1.  **Victoria**: Al completar exitosamente la semana 4 del mes 6.
+2.  **Derrota por HP**: Cuando el ingreso disponible es menor al pago mínimo de la tarjeta.
+3.  **Insolvencia Extrema**: Cuando un gasto obligatorio requiere efectivo y el jugador no tiene solvencia ni crédito para disponer.
+4.  **Salida Voluntaria**: Cuando el usuario decide abandonar el juego.
+
+React debe usar este único punto de entrada (`onGameOver`) para recolectar el historial y realizar la petición a la API de análisis post-partida.
 
 No se debe modificar directamente `jugador` o `tarjeta` desde React; toda la lógica debe fluir a través de los métodos de `MotorJuego` y la interfaz `vista`.
 
