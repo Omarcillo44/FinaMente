@@ -16,15 +16,22 @@ Se implementó una nueva clase `Historial` encargada de estructurar todos los ev
 
 ## 2. Consumo de API (Frontend)
 
-La lógica de comunicación con el servidor se centralizó en el punto de entrada de la demo (`main.js`), manteniendo el motor de juego puro y desacoplado de la red.
-
-- **Endpoint**: `POST https://stag-improved-wildcat.ngrok-free.app/partida/analizar`
+- **Arquitectura de Red**: Sistema de Fallback Invisible (Implementado en `apiUtils.js`).
+- **Plan A**: `https://stag-improved-wildcat.ngrok-free.app/partida/analizar` (ngrok).
+- **Plan B**: `https://finamente-production.up.railway.app/partida/analizar` (Railway).
+- **Comportamiento**: Si el Plan A falla o no está disponible, el sistema conmuta automáticamente al Plan B sin alertar al usuario.
 - **Flujo de Ejecución**:
     1. El motor dispara el callback `onGameOver` al detectar victoria o derrota.
     2. La interfaz muestra un indicador visual: `🧬 ENVIANDO DATOS A LA IA PARA ANÁLISIS...`.
     3. Se realiza la petición `fetch` enviando el JSON generado por el `Historial`.
     4. El resultado (feedback personalizado) se renderiza en la consola con un formato destacado.
 - **Resiliencia**: Si la API está fuera de línea, el juego termina normalmente mostrando una advertencia informativa, sin interrumpir la experiencia del usuario.
+
+- **Puntos de Activación (onGameOver)**:
+    - Derrota por HP (Corte de mes o impacto negativo).
+    - Derrota por Insolvencia (No poder pagar un gasto obligatorio).
+    - Salida Voluntaria (Botón de salir / `finalizarPartidaVoluntaria`).
+    - Victoria (Completar exitosamente los 6 meses).
 
 ---
 
