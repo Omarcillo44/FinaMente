@@ -1,29 +1,36 @@
 import React from 'react';
+import { useGameStore } from '../../store/gameStore';
 
 export default function RetroalimentacionView() {
-  return (
-    <div className="w-full h-full flex flex-col items-center p-6 bg-slate-900 text-slate-100">
-      <h2 className="text-3xl font-bold mt-10 mb-6 text-emerald-400">Análisis Financiero</h2>
-      
-      <div className="w-full max-w-md bg-slate-800 p-6 rounded-2xl shadow-xl space-y-6 text-left">
-        <div>
-          <h3 className="font-bold text-xl text-yellow-400 mb-2">Puntos de Mejora</h3>
-          <p className="text-sm text-slate-300 bg-slate-700 p-3 rounded-lg border-l-4 border-yellow-500">
-            Tus "Gastos Hormiga" (cafés, snacks, suscripciones sin usar) constituyeron el 25% de tu ingreso mensual este mes. Reducirlos al 10% te permitiría invertir más.
-          </p>
-        </div>
+  const { datosPantalla } = useGameStore();
 
-        <div>
-          <h3 className="font-bold text-xl text-emerald-400 mb-2">Aciertos</h3>
-          <p className="text-sm text-slate-300 bg-slate-700 p-3 rounded-lg border-l-4 border-emerald-500">
-            Mantuviste tu tarjeta de crédito por debajo del 30% de uso y pagaste el total para no generar intereses. ¡Excelente historial crediticio!
-          </p>
+  const getStylePorTipo = (tipo) => {
+    switch (tipo) {
+      case 'exito': return 'text-emerald-400 border-emerald-500 bg-emerald-900/40 text-emerald-100';
+      case 'peligro': return 'text-red-400 border-red-500 bg-red-900/40 text-red-100';
+      case 'alerta': return 'text-orange-400 border-orange-500 bg-orange-900/40 text-orange-100';
+      case 'titulo': return 'text-blue-400 border-blue-500 bg-blue-900/40 text-blue-100';
+      default: return 'text-yellow-400 border-yellow-500 bg-yellow-900/40 text-yellow-100';
+    }
+  };
+
+  const styleObj = getStylePorTipo(datosPantalla?.tipo);
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-slate-900 text-slate-100 font-pixel">
+      {datosPantalla?.tipo === 'titulo' ? (
+         <h1 className="text-4xl font-bold text-center text-blue-400 animate-pulse">{datosPantalla?.mensaje}</h1>
+      ) : (
+        <div className="w-full max-w-md bg-slate-800 p-6 rounded-2xl shadow-xl space-y-6 text-center">
+            <h2 className="text-2xl font-bold mb-4">Aviso de Sistema</h2>
+            <p className={`text-lg p-4 rounded-lg border-l-4 ${styleObj}`}>
+                {datosPantalla?.mensaje}
+            </p>
+            {datosPantalla?.score !== undefined && (
+                <p className="mt-4 text-emerald-300 font-bold">Nuevo Score Crediticio: {datosPantalla.score}</p>
+            )}
         </div>
-      </div>
-      
-      <button className="mt-auto mb-10 w-full max-w-sm py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold shadow-lg transition-transform active:scale-95 text-lg">
-        Entendido
-      </button>
+      )}
+      <p className="fixed bottom-10 opacity-50 animate-pulse">Avanzando...</p>
     </div>
   );
 }
