@@ -25,6 +25,34 @@ const CENTROS_ESCENARIOS = {
 // Control Global de Rotación del Escenario (270 grados = 1.5 PI)
 const SCENE_ROTATION_Y = Math.PI * 1.5;
 
+// Diccionario de mapeo de assets de Enemigos
+const MAPA_ASSETS_ENEMIGOS = {
+  "Recarga Telcel": "Celular", "Plan Celular": "Celular", "Recarga Básica": "Celular",
+  "Spotify Premium": "Television", "Spotify Estudiante": "Television", "iCloud / Drive": "Television", "Suscripción económica": "Television",
+  "Internet de casa": "Router", "Internet Alta Velocidad": "Router",
+  "Renta de departamento": "Recibo", "Servicios (Agua, Luz, Gas)": "Recibo", "Aporte fijo al hogar": "Recibo", "Aporte simbólico casa": "Recibo",
+  "Despensa personal": "Carrito", "Despensa quincenal": "Carrito",
+  "Comidas en cafetería": "Cubiertos", "Comidas cerca de oficina": "Cubiertos", "Cena restaurante": "Cubiertos", "Comidas del trabajo": "Cubiertos", "Cena en lugar exclusivo": "Cubiertos",
+  "Salida por tacos": "Taco", "Comida callejera": "Taco",
+  "Antojo Starbucks": "Vaso", "Antojo dulce": "Vaso",
+  "Pasajes de la semana": "Transporte", "Pasajes en bus": "Transporte",
+  "Taxi por lluvia": "Taxi", "Taxi de madrugada": "Taxi", "Transporte / Uber": "Taxi",
+  "Transporte / Gasolina": "Coche",
+  "Llanta de bici / Taxi": "Llanta",
+  "Material escolar": "Cuaderno", "Útiles escolares": "Cuaderno", "Útiles y certificaciones": "Cuaderno", "Útiles sueltos": "Cuaderno",
+  "Copias y engargolados": "Papel",
+  "Salida al cine": "Boleto", "Cine en promoción": "Boleto", "Salida de fin de semana": "Boleto", "Salida barata con amigos": "Boleto", "Boleto de Concierto": "Boleto", "Viaje exprés": "Boleto",
+  "Skin en videojuego": "Control", "Videojuego estreno": "Control", "Juego indie en oferta": "Control",
+  "Suscripción Gym": "Mancuerna", "Gym / Club Deportivo": "Mancuerna",
+  "Camiseta nueva": "Camiseta", "Ropa y calzado": "Camiseta", "Ropa de marca": "Camiseta", "Ropa de segunda mano": "Camiseta",
+  "Cable del celular roto": "Cable", "Accesorio Tech": "Cable", "Electrodoméstico menor": "Cable",
+  "Medicamento ligero": "Botiquin", "Consulta y receta": "Botiquin", "Emergencia dental": "Botiquin", "Medicina especializada": "Botiquin", "Seguro / Deducible menor": "Botiquin", "Medicamento genérico": "Botiquin",
+  "Aporte extra de limpieza": "Jabon", "Artículos de limpieza": "Jabon", "Higiene y cuidado personal": "Jabon", "Higiene básica": "Jabon",
+  "Cooperación imprevista": "Regalo", "Regalo de cumpleaños": "Regalo", "Cooperación urgente": "Regalo", "Membresía escolar": "Regalo",
+  "Reparación de laptop": "Martillo", "Reparación de coche/refri": "Martillo", "Mantenimiento hogar": "Martillo", "Reparación de zapatos": "Martillo", "Reposición de llaves": "Martillo",
+  "Reposición de credencial": "INE", "Multa o trámite": "INE"
+};
+
 // ---------------- SUBSISTEMAS 3D ----------------
 
 class ErrorBoundary extends React.Component {
@@ -143,8 +171,8 @@ function EnemigoCombate({ data, pos, isSelecting, onClick }) {
   const meshRef = useRef();
 
   useEffect(() => {
-    const safeName = data.nombre.replace(/\s+/g, '_');
-    const url = `${import.meta.env.BASE_URL}sprites/enemigos/${safeName}.png`;
+    const assetBasename = MAPA_ASSETS_ENEMIGOS[data.nombre] || "Placeholder_36";
+    const url = `${import.meta.env.BASE_URL}sprites/enemigos/${assetBasename}.png`;
     textureLoader.load(url, tex => {
       tex.magFilter = THREE.NearestFilter;
       tex.minFilter = THREE.NearestFilter;
