@@ -23,7 +23,7 @@ export default function PersonajeController({ position = [131, 1, 137], inputs, 
   const posRef = useRef(new THREE.Vector3(...position));
 
   const SIZE = 8;
-  const MOVE_SPEED = 40.0;
+  const MOVE_SPEED = 35.0;
 
   const animState = useRef({
     direccion: 'down',
