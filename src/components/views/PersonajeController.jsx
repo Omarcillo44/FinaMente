@@ -75,10 +75,23 @@ export default function PersonajeController({ position = [131, 1, 137], inputs, 
     if (posRef.current.z < 20) posRef.current.z = 20;
     if (posRef.current.z > 151) posRef.current.z = 151;
 
+    // --- CÁMARA (Opciones de Isométrica) ---
+    // Cambia a 'false' si prefieres la perspectiva original
+    const ES_ISOMETRICA = false;
+
+    const OFFSET_X = ES_ISOMETRICA ? 24 : 0;
+    const OFFSET_Y = 24;
+    const OFFSET_Z = ES_ISOMETRICA ? 24 : 28;
+
+    const cameraOffset = new THREE.Vector3(OFFSET_X, OFFSET_Y, OFFSET_Z);
+    const targetCameraPos = posRef.current.clone().add(cameraOffset);
+    camera.position.lerp(targetCameraPos, 0.1);
+    camera.lookAt(posRef.current.clone().add(new THREE.Vector3(0, 1, 0)));
+
     if (personajeRef.current) {
       personajeRef.current.position.copy(posRef.current);
-      // Fija la rotación para evitar giro 3D (pitch hacia atrás para mirar a la cámara isómetrica)
-      personajeRef.current.rotation.set(-Math.PI / 4, 0, 0);
+      // Billboard: Hacemos que el sprite plano siempre vea hacia la cámara perfectamente
+      personajeRef.current.quaternion.copy(camera.quaternion);
     }
 
     // Log visual
@@ -86,13 +99,6 @@ export default function PersonajeController({ position = [131, 1, 137], inputs, 
     if (divLog && (isMoving || animState.current.frame === 0)) {
       divLog.innerText = `X: ${Math.round(posRef.current.x)} | Z: ${Math.round(posRef.current.z)}`;
     }
-
-    const OFFSET_Y = 24;
-    const OFFSET_Z = 28;
-    const cameraOffset = new THREE.Vector3(0, OFFSET_Y, OFFSET_Z);
-    const targetCameraPos = posRef.current.clone().add(cameraOffset);
-    camera.position.lerp(targetCameraPos, 0.1);
-    camera.lookAt(posRef.current.clone().add(new THREE.Vector3(0, 1, 0)));
 
     // --- LOGICA DE COLISIÓN Y DESBLOQUEO ---
     let enCualquierArea = false;

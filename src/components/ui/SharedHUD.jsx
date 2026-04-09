@@ -11,7 +11,7 @@ export default function SharedHUD() {
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center space-x-2 bg-black/50 px-2 py-1 rounded-md border border-emerald-500/30">
           <span className="text-emerald-400">HP:</span>
-          <span className="font-bold">{headers?.hp ?? 100}</span>
+          <span className="font-pixel">{headers?.hp ?? 100}</span>
         </div>
         
         <div className="flex items-center space-x-3 bg-black/50 px-2 py-1 rounded-md border border-white/10 text-gray-300">

@@ -10,7 +10,7 @@ export default function SeleccionPersonajesView() {
 
   const confirmarPersonaje = () => {
     setPersonajeSeleccionado(seleccionado);
-    cambiarEscena('SeleccionDificultad');
+    cambiarEscena('VideoPersonaje');
   };
 
   const personajes = ['Clemente', 'Josefina'];
