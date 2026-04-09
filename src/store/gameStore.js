@@ -36,12 +36,23 @@ export const useGameStore = create((set, get) => ({
   setPosicionPersonaje: (pos) => set({ posicionPersonaje: pos }),
   setZonaBloqueada: (zona) => set({ zonaBloqueada: zona }),
 
-  // === INTEGRACIÓN CON EL MOTOR JUEGO ===
-  resolverPromesa: null,  
+  // === BUCLE BANCA MÓVIL ===
+  mantenerBancaAbierta: false,
+  setMantenerBancaAbierta: (val) => set({ mantenerBancaAbierta: val }),
 
   // El motor llamará a esta función para congelar su código hasta que el usuario decida algo.
   solicitarInteraccion: (nuevaEscena, datos) => {
     return new Promise((resolve) => {
+      // INTERCEPTOR PARA BUCLE DE BANCA
+      // Si la banca "sigue abierta" en nuestra mente y el motor intenta pedirnos la siguiente opción (gasto o loc),
+      // le decimos inmediatamente 'p' para que el motor re-ejecute realizarOperacionesBancaMovil().
+      // Restauramos escenaActual aquí para no quedarnos atrapados en la vista transitoria de Retroalimentación.
+      if (get().mantenerBancaAbierta && (datos?.modo === 'seleccionar_gasto' || datos?.modo === 'localizaciones')) {
+        set({ escenaActual: nuevaEscena });
+        resolve('p');
+        return;
+      }
+
       // Limpiamos el resolver anterior por precaución y asignamos el nuevo
       set({
         escenaActual: nuevaEscena,
