@@ -13,7 +13,7 @@ export default function BancaMovilView() {
 
   const procesarPago = (tipoPago, monto) => {
     const m = parseFloat(monto);
-    if (isNaN(m) || m < 1) {
+    if (isNaN(m) || m < 0) {
       setFeedbackMsg("El monto debe ser\nmayor a $0.00");
       setFeedbackState('peligro');
       setTimeout(() => setFeedbackState(null), 2000);
@@ -34,7 +34,7 @@ export default function BancaMovilView() {
 
   const solicitarRetiro = () => {
     const m = parseFloat(montoRetiro);
-    if (isNaN(m) || m < 1) {
+    if (isNaN(m) || m < 0) {
       setFeedbackMsg("El monto a retirar debe ser\nmayor a $0.00");
       setFeedbackState('peligro');
       setTimeout(() => setFeedbackState(null), 2000);
@@ -91,12 +91,12 @@ export default function BancaMovilView() {
           </div>
           
           <div className="mt-4 p-3 bg-indigo-800/50 rounded-xl border border-white/10">
-            <p className="text-[10px] opacity-80 uppercase tracking-tighter">Deuda en Tarjeta</p>
-            <p className="text-xl text-red-300 font-bold">-${banca.saldoInsoluto?.toFixed(2) || '0.00'}</p>
+            <p className="text-[12px] opacity-80 uppercase tracking-tighter">Deuda en Tarjeta</p>
+            <p className="text-xl text-red-300 font-bold">${banca.saldoInsoluto?.toFixed(2) || '0.00'}</p>
             <div className="w-full bg-indigo-900 h-1 mt-2 rounded-full overflow-hidden">
                <div className="bg-red-400 h-full" style={{ width: `${Math.min(100, (banca.saldoInsoluto / (banca.limiteCredito || 1)) * 100)}%` }}></div>
             </div>
-            <p className="text-[8px] opacity-60 mt-1">Crédito libre: ${banca.creditoDisponible?.toFixed(2)} / ${banca.limiteCredito}</p>
+            <p className="text-[10px] opacity-60 mt-1">Crédito libre: ${banca.creditoDisponible?.toFixed(2)} / ${banca.limiteCredito}</p>
           </div>
         </div>
 
