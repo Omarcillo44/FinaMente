@@ -35,7 +35,7 @@ export default function SeleccionPersonajesView() {
             <div 
               key={personaje}
               onClick={() => setSeleccionado(personaje)}
-              className={`relative cursor-pointer transition-all duration-300 transform ${isSelected ? 'scale-110 shadow-[0_0_20px_rgba(99,102,241,0.6)]' : 'scale-90 opacity-70 hover:opacity-100 hover:scale-100'}`}
+              className={`relative cursor-pointer transition-all duration-300 ${isSelected ? 'shadow-[0_0_30px_rgba(99,102,241,0.8)] z-10' : 'opacity-60 hover:opacity-100 hover:-translate-y-2'}`}
             >
               <div 
                 className={`rounded-xl flex flex-col items-center justify-center border-4 ${isSelected ? 'border-indigo-500 bg-indigo-950/40' : 'border-slate-700 bg-slate-800'} overflow-hidden relative`}

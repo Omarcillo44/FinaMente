@@ -202,7 +202,7 @@ export default function BatallaView() {
   // Lógica de Animación de Jugador
   const [playerAnim, setPlayerAnim] = useState('wait');
   const [pendingResolution, setPendingResolution] = useState(null);
-  
+
   // Para mostrar error si el MSI no está disponible sin salir del combate
   const [localFeedbackMsg, setLocalFeedbackMsg] = useState(null);
 
@@ -241,15 +241,15 @@ export default function BatallaView() {
       {/* OVERLAY DE ERROR LOCAL (ej. MSI Inválido) */}
       {localFeedbackMsg && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-md z-[100] pointer-events-auto">
-             <div className="bg-white px-12 py-10 rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col items-center animate-fade-in-up">
-                 <StatusFeedback tipo="peligro" />
-                 <p className="mt-4 text-red-500 font-pixel text-xs sm:text-sm text-center font-bold whitespace-pre-wrap">{localFeedbackMsg}</p>
-             </div>
+          <div className="bg-white px-12 py-10 rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col items-center animate-fade-in-up">
+            <StatusFeedback tipo="peligro" />
+            <p className="mt-4 text-red-500 font-pixel text-xs sm:text-sm text-center font-bold whitespace-pre-wrap">{localFeedbackMsg}</p>
+          </div>
         </div>
       )}
 
       {/* CABECERA (Z-10) */}
-      <div className="absolute top-20 left-0 w-full px-6 flex justify-between items-start pointer-events-none z-10">
+      <div className="absolute top-32 left-0 w-full px-6 flex justify-between items-start pointer-events-none z-10">
         <h2 className="bg-slate-900/80 px-6 py-2 rounded-lg text-red-500 font-pixel text-xl shadow-lg border border-red-900/50">
           {loc.toUpperCase()}
         </h2>

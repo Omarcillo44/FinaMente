@@ -107,20 +107,20 @@ export default function MapaView() {
       {datosPantalla?.modo === 'banca' && <BancaMovilView />}
 
       {/* MISIONES (Izquierda superior, fijas) */}
-      <div className="absolute top-20 left-4 z-40 bg-slate-800/80 border border-slate-600 rounded-xl p-4 text-white shadow-xl backdrop-blur min-w-[200px] pointer-events-none">
-          <h3 className="text-sm text-indigo-300 border-b border-white/20 pb-2 mb-2 font-bold uppercase tracking-widest">Pendientes</h3>
-          <ul className="space-y-2 text-xs text-slate-300">
-            {arrLocalizaciones.length === 0 && <li>Ninguna tarea pendiente.</li>}
-            {arrLocalizaciones.map((loc, idx) => (
-              <li key={idx} className="flex items-center space-x-2">
-                <span className="text-emerald-400">»</span> <span>Ir a {loc}</span>
-              </li>
-            ))}
-          </ul>
+      <div className="absolute top-32 left-4 z-40 bg-slate-800/80 border border-slate-600 rounded-xl p-4 text-white shadow-xl backdrop-blur min-w-[200px] pointer-events-none">
+        <h3 className="text-sm text-indigo-300 border-b border-white/20 pb-2 mb-2 font-bold uppercase tracking-widest">Pendientes</h3>
+        <ul className="space-y-2 text-xs text-slate-300">
+          {arrLocalizaciones.length === 0 && <li>Ninguna tarea pendiente.</li>}
+          {arrLocalizaciones.map((loc, idx) => (
+            <li key={idx} className="flex items-center space-x-2">
+              <span className="text-emerald-400">»</span> <span>Ir a {loc}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* BOTONES DERECHA (Pausa, Croquis, Banca) */}
-      <div className="absolute top-20 right-4 z-50 flex flex-col space-y-3 items-end">
+      <div className="absolute top-32 right-4 z-50 flex flex-col space-y-3 items-end">
         <button
           onClick={handlePausar}
           className="bg-red-700 hover:bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-full font-bold shadow opacity-90 border-2 border-red-500 text-sm active:scale-95 transition-transform tracking-tighter">
@@ -130,13 +130,13 @@ export default function MapaView() {
         <button
           onClick={() => setShowMapaImg(!showMapaImg)}
           className="bg-sky-600 hover:bg-sky-500 text-white px-3 py-2 rounded-lg font-pixel shadow border border-sky-400 text-xs transition-transform active:scale-95 flex items-center gap-2">
-           🗺️ Croquis
+          🗺️ Croquis
         </button>
 
         <button
           onClick={() => resolverPromesa && resolverPromesa('p')}
           className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-lg font-pixel shadow border border-purple-400 text-xs transition-transform active:scale-95 flex items-center gap-2">
-           📱 Banca
+          📱 Banca
         </button>
       </div>
 
@@ -148,7 +148,7 @@ export default function MapaView() {
       {/* DRAWER MAPA */}
       {showMapaImg && (
         <div className="absolute inset-0 z-50 pointer-events-auto" onClick={() => setShowMapaImg(false)}>
-          <div className="absolute top-36 right-4 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute top-48 right-4 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-2 px-2">
               <h3 className="text-center font-pixel text-sky-300">Croquis de la Zona</h3>
               <button onClick={() => setShowMapaImg(false)} className="text-slate-400 hover:text-white font-bold bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5 text-base leading-none">×</button>
@@ -190,7 +190,7 @@ export default function MapaView() {
       )}
 
       {/* Renderizado 3D */}
-      <Canvas camera={{ position: [0, 5, 10], fov: 100 }}>
+      <Canvas camera={{ position: [0, 5, 10], fov: 60 }}>
         <color attach="background" args={['#8cf7ec']} />
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
