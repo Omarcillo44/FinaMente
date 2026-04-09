@@ -5,13 +5,13 @@ import { useGameStore } from '../../store/gameStore';
 
 export const ZONAS_MAPA = {
   // Configuración de hitbox (x, z, radius)
-  'ESCUELA': { x: 50, z: 50, r: 10 },
-  'SUPERMERCADO': { x: 179, z: 123, r: 10 },
-  'CASA': { x: 131, z: 121, r: 10 },
-  'OFICINA': { x: 103, z: 48, r: 10 },
-  'CONSULTORIO': { x: 175, z: 56, r: 10 },
-  'TRANSPORTE': { x: 125, z: 64, r: 10 },
-  'CENTRO_COMERCIAL': { x: 46, z: 126, r: 10 }
+  'ESCUELA': { x: 50, z: 50, r: 4 },
+  'SUPERMERCADO': { x: 179, z: 123, r: 4 },
+  'CASA': { x: 131, z: 121, r: 4 },
+  'OFICINA': { x: 103, z: 48, r: 4 },
+  'CONSULTORIO': { x: 175, z: 56, r: 4 },
+  'TRANSPORTE': { x: 125, z: 64, r: 4 },
+  'CENTRO_COMERCIAL': { x: 46, z: 126, r: 4 }
 };
 
 export default function PersonajeController({ position = [131, 1, 137], inputs, activas = [], onCollision, zonaBloqueada, onZonalibear }) {
@@ -137,7 +137,7 @@ export default function PersonajeController({ position = [131, 1, 137], inputs, 
 
     if (prevFrame !== animState.current.frame || prevDir !== currentDir || prevMoving !== isMoving) {
       const textureUrl = isMoving
-        ? `${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/${currentDir}/${currentDir}-${animState.current.frame}.png` 
+        ? `${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/${currentDir}/${currentDir}-${animState.current.frame}.png`
         : `${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/${currentDir}-0.png`;
       applyTexture(textureUrl);
     }
