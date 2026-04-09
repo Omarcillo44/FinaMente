@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../../store/gameStore';
+import { solicitarAnalisisIA } from '../../core/apiUtils';
 
 export default function GameOverView() {
   const { datosPantalla, cambiarEscena, historialIA } = useGameStore();
