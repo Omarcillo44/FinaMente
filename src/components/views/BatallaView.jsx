@@ -212,7 +212,7 @@ function EnemigoCombate({ data, pos, isSelecting, onClick }) {
       </mesh>
 
       <Texto2D contenido={data.nombre} posicion={[0, 9.5, 0]} fontSize={0.4} color="white" maxWidth={9.5} />
-      <Texto2D contenido={`$${data.monto}`} posicion={[0, -0.0, 0]} fontSize={0.8} color="#f48585" />
+      <Texto2D contenido={`$${data.monto.toFixed(2)}`} posicion={[0, -0.0, 0]} fontSize={0.8} color="#f48585" />
       {isSelecting && <Texto2D contenido="[¡Atacar!]" posicion={[0, -2, 0]} fontSize={0.5} color="yellow" />}
       {data.esOpcional && <Texto2D contenido="(Opcional)" posicion={[0, 10.5, 0]} fontSize={0.4} color="gray" />}
     </group>
