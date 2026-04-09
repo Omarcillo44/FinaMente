@@ -1,11 +1,11 @@
 import React from 'react';
 import { useGameStore } from '../../store/gameStore';
 
-export default function SharedHUD() {
+export default function SharedHUD({ className = '' }) {
   const headers = useGameStore((state) => state.headers);
 
   return (
-    <div className="absolute top-0 left-0 w-full bg-slate-900/80 text-slate-100 p-3 md:p-4 z-50 flex flex-col gap-3 md:gap-4 border-b border-white/20 select-none shadow-lg backdrop-blur-sm shadow-black/50 font-pixel text-sm md:text-base lg:text-lg">
+    <div className={`absolute top-0 left-0 w-full bg-slate-900/80 text-slate-100 p-3 md:p-4 z-50 flex flex-col gap-3 md:gap-4 border-b border-white/20 select-none shadow-lg backdrop-blur-sm shadow-black/50 font-pixel text-sm md:text-base lg:text-lg ${className}`}>
       
       {/* Renglón 1: Vida y Progreso */}
       <div className="flex w-full items-center justify-between">

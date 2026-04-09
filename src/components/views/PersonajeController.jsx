@@ -11,7 +11,7 @@ export const ZONAS_MAPA = {
   'OFICINA': { x: 103, z: 48, r: 4 },
   'CONSULTORIO': { x: 175, z: 56, r: 4 },
   'TRANSPORTE': { x: 125, z: 64, r: 4 },
-  'CENTRO_COMERCIAL': { x: 46, z: 126, r: 4 }
+  'CENTRO_COMERCIAL': { x: 46, z: 128, r: 4 }
 };
 
 export default function PersonajeController({ position = [131, 1, 137], inputs, activas = [], onCollision, zonaBloqueada, onZonalibear }) {
