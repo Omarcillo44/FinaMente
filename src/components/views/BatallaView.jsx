@@ -69,7 +69,7 @@ function JugadorCombate({ animAction, resolveCombat, targetEnemyPos }) {
   // Controlador de FPS local
   const [frameInfo, setFrameInfo] = useState({ currentAnim: 'wait', frame: 0, maxFrames: 8 });
   const timeAccumulator = useRef(0);
-  const startPos = useRef(new THREE.Vector3(-8, 4.5, 0)); // Subimos altura proporcionalmente
+  const startPos = useRef(new THREE.Vector3(-15, 4.5, 0)); // Subimos altura proporcionalmente
 
   useEffect(() => {
     textureLoader.load(`${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/combat/wait/wait-0.png`, (tex) => {
@@ -127,11 +127,11 @@ function JugadorCombate({ animAction, resolveCombat, targetEnemyPos }) {
 
   return (
     <group>
+      <Texto2D contenido={personajeSeleccionado.toUpperCase()} posicion={[-8, 16, 10]} fontSize={0.6} color="#a4cdff" />
       <mesh ref={meshRef} position={[-8, 4.5, 0]} rotation={[0, LOOK_DIR, 0]}>
         <planeGeometry args={[25, 25]} />
         <meshBasicMaterial ref={materialRef} transparent alphaTest={0.5} side={THREE.DoubleSide} depthTest={false} />
       </mesh>
-      <Texto2D contenido={personajeSeleccionado.toUpperCase()} posicion={[-8, 10, 0]} fontSize={0.6} color="#60a5fa" />
     </group>
   );
 }
@@ -162,7 +162,7 @@ function EnemigoCombate({ data, pos, isSelecting, onClick }) {
     if (meshRef.current) {
       meshRef.current.position.y = pos[1] + Math.abs(Math.sin(clock.getElapsedTime() * 4)) * 0.4;
       if (isSelecting) {
-        const s = 1 + Math.sin(clock.getElapsedTime() * 10) * 0.05;
+        const s = 1 + Math.sin(clock.getElapsedTime() * 10) * 0.1;
         meshRef.current.scale.set(s, s, s);
       }
     }
@@ -178,14 +178,14 @@ function EnemigoCombate({ data, pos, isSelecting, onClick }) {
         onPointerOver={() => isSelecting && (document.body.style.cursor = 'pointer')}
         onPointerOut={() => isSelecting && (document.body.style.cursor = 'auto')}
       >
-        <planeGeometry args={[14, 14]} />
+        <planeGeometry args={[13, 13]} />
         <meshBasicMaterial ref={materialRef} transparent alphaTest={0.5} side={THREE.DoubleSide} depthTest={false} color={isSelecting ? '#ffdddd' : 'white'} />
       </mesh>
 
-      <Texto2D contenido={data.nombre} posicion={[0, 7.5, 0]} fontSize={0.6} color="white" />
-      <Texto2D contenido={`$${data.monto}`} posicion={[0, 6.0, 0]} fontSize={0.8} color="#fca5a5" />
-      {isSelecting && <Texto2D contenido="[¡Atacar!]" posicion={[0, -7, 0]} fontSize={0.5} color="yellow" />}
-      {data.esOpcional && <Texto2D contenido="(Opcional)" posicion={[0, -8, 0]} fontSize={0.4} color="gray" />}
+      <Texto2D contenido={data.nombre} posicion={[0, 9.5, 0]} fontSize={0.4} color="white" maxWidth={9.5} />
+      <Texto2D contenido={`$${data.monto}`} posicion={[0, -0.0, 0]} fontSize={0.8} color="#f48585" />
+      {isSelecting && <Texto2D contenido="[¡Atacar!]" posicion={[0, -2, 0]} fontSize={0.5} color="yellow" />}
+      {data.esOpcional && <Texto2D contenido="(Opcional)" posicion={[0, 10.5, 0]} fontSize={0.4} color="gray" />}
     </group>
   );
 }
@@ -236,7 +236,7 @@ export default function BatallaView() {
 
       {/* CABECERA (Z-10) */}
       <div className="absolute top-20 left-0 w-full px-6 flex justify-between items-start pointer-events-none z-10">
-        <h2 className="bg-slate-900/80 px-6 py-2 rounded-lg text-red-500 font-bold text-xl shadow-lg border border-red-900/50">
+        <h2 className="bg-slate-900/80 px-6 py-2 rounded-lg text-red-500 font-pixel text-xl shadow-lg border border-red-900/50">
           🔥 {loc.toUpperCase()}
         </h2>
       </div>
@@ -244,7 +244,7 @@ export default function BatallaView() {
       {/* PANEL DE DECISIONES INFERIOR (Z-20) */}
       <div className="absolute bottom-0 left-0 w-full bg-slate-900 border-t-4 border-indigo-900 p-6 flex flex-col md:flex-row shadow-[0_-20px_40px_rgba(0,0,0,0.8)] z-20">
         <div className="flex-1 text-slate-300 pr-6 mb-4 md:mb-0 hidden md:block select-none">
-          <h3 className="text-indigo-400 text-lg font-bold mb-2">Mensaje del Sistema</h3>
+          <h3 className="text-indigo-400 text-lg font-pixel mb-2">Mensaje del Sistema</h3>
           {mode === 'seleccionar_gasto' && <p>Toca al enemigo en pantalla (modelo 3D) para enfrentarlo, o decide realizar una Huida Táctica con el botón rojo.</p>}
           {mode !== 'seleccionar_gasto' && datosPantalla?.gasto && <p>Tienes un gasto activo. Escoge tu arma (efectivo o crédito).</p>}
         </div>
@@ -254,7 +254,7 @@ export default function BatallaView() {
           {mode === 'seleccionar_gasto' && (
             <>
               <div className="col-span-2 text-center text-sm text-gray-400 mb-2">Apunta al Enemigo en pantalla para atacarlo</div>
-              <button onClick={() => handleActionClick('s', null)} className="col-span-2 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg transition-transform active:scale-95 border border-slate-500 shadow-md">
+              <button onClick={() => handleActionClick('s', null)} className="col-span-2 py-4 bg-slate-700 hover:bg-slate-600 text-white font-pixel rounded-lg transition-transform active:scale-95 border border-slate-500 shadow-md">
                 🏃 HUIDA TÁCTICA (Cerrar Batalla)
               </button>
             </>
@@ -263,22 +263,22 @@ export default function BatallaView() {
           {/* Combate Individual o Menús Internos */}
           {mode !== 'seleccionar_gasto' && !datosPantalla?.opcionesCuotas && datosPantalla?.gasto && (
             <>
-              <button onClick={() => handleActionClick('d', 'punch')} className="py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg text-emerald-100 font-bold shadow transition-transform active:scale-95 border border-emerald-500 flex flex-col items-center justify-center">
+              <button onClick={() => handleActionClick('d', 'punch')} className="py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg text-emerald-100 font-pixel shadow transition-transform active:scale-95 border border-emerald-500 flex flex-col items-center justify-center">
                 <span>💵 Pagar Débito</span>
                 <span className="text-xs font-normal opacity-70 mt-1">Punch Efectivo</span>
               </button>
 
-              <button onClick={() => handleActionClick('t', 'kick')} className="py-3 bg-indigo-700 hover:bg-indigo-600 rounded-lg text-indigo-100 font-bold shadow transition-transform active:scale-95 border border-indigo-500 flex flex-col items-center justify-center">
+              <button onClick={() => handleActionClick('t', 'kick')} className="py-3 bg-indigo-700 hover:bg-indigo-600 rounded-lg text-indigo-100 font-pixel shadow transition-transform active:scale-95 border border-indigo-500 flex flex-col items-center justify-center">
                 <span>💳 Pagar TC</span>
                 <span className="text-xs font-normal opacity-70 mt-1">Kick Crédito</span>
               </button>
 
               {datosPantalla?.puedeIgnorar ? (
-                <button onClick={() => handleActionClick('i', null)} className="py-3 col-span-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-lg shadow border border-slate-600 transition-transform active:scale-95">
+                <button onClick={() => handleActionClick('i', null)} className="py-3 col-span-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-pixel rounded-lg shadow border border-slate-600 transition-transform active:scale-95">
                   🛡️ Ignorar Gasto (-20 HP)
                 </button>
               ) : (
-                <button onClick={() => handleActionClick('m', null)} className="py-3 col-span-2 bg-purple-700 hover:bg-purple-600 text-purple-100 font-bold rounded-lg shadow border border-purple-500 transition-transform active:scale-95">
+                <button onClick={() => handleActionClick('m', null)} className="py-3 col-span-2 bg-purple-700 hover:bg-purple-600 text-purple-100 font-pixel rounded-lg shadow border border-purple-500 transition-transform active:scale-95">
                   🌟 Negociar a M.S.I.
                 </button>
               )}
@@ -288,13 +288,13 @@ export default function BatallaView() {
           {/* MSI Selection */}
           {mode === 'msi' && datosPantalla?.opcionesCuotas && (
             <div className="col-span-2 flex flex-col space-y-2">
-              <p className="text-center text-purple-300 font-bold mb-2">Selecciona Mensualidades:</p>
+              <p className="text-center text-purple-300 font-pixel mb-2">Selecciona Mensualidades:</p>
               {datosPantalla.opcionesCuotas.map(cuota => (
-                <button key={cuota} onClick={() => handleActionClick(cuota.toString(), 'punch')} className="py-3 bg-purple-700 hover:bg-purple-600 rounded-lg font-bold">
+                <button key={cuota} onClick={() => handleActionClick(cuota.toString(), 'punch')} className="py-3 bg-purple-700 hover:bg-purple-600 rounded-lg font-pixel">
                   [👊 Punch] {cuota} Meses
                 </button>
               ))}
-              <button onClick={() => handleActionClick('c', null)} className="py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-bold text-gray-300">
+              <button onClick={() => handleActionClick('c', null)} className="py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-pixel text-gray-300">
                 Cancelar Negociación
               </button>
             </div>
@@ -302,10 +302,10 @@ export default function BatallaView() {
 
           {mode === 'retiroObligatorio' && (
             <div className="col-span-2">
-              <button onClick={() => handleActionClick('y', 'kick')} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-lg font-bold mb-2">
+              <button onClick={() => handleActionClick('y', 'kick')} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-lg font-pixel mb-2">
                 [🦵 Kick] Pagar Asumiendo Comisión ({datosPantalla.maxRetiro})
               </button>
-              <button onClick={() => handleActionClick('n', null)} className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded-lg font-bold">
+              <button onClick={() => handleActionClick('n', null)} className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded-lg font-pixel">
                 Asumir Insolvencia (Game Over)
               </button>
             </div>
@@ -332,7 +332,11 @@ export default function BatallaView() {
         />
 
         {mode === 'seleccionar_gasto' && datosPantalla?.gastos && datosPantalla.gastos.map((g, idx) => {
-          const spreadPos = [enemyBasePos[0] + (idx * 9) - ((datosPantalla.gastos.length - 1) * 4.5), enemyBasePos[1], enemyBasePos[2] - (idx * 2)];
+          const spreadPos = [
+            enemyBasePos[0] + (idx * 10) - ((datosPantalla.gastos.length - 0.5) * 5),
+            enemyBasePos[1] + (idx * 3), // +3 unidades de altura por cada enemigo extra
+            enemyBasePos[2] - (idx * 4)  // Profundidad para perspectiva
+          ];
           return (
             <EnemigoCombate
               key={idx}
@@ -353,7 +357,7 @@ export default function BatallaView() {
         )}
 
         {/* CONTROLES DE CAMARA PURAMENTE PARA ZOOM LIMITADO */}
-        <OrbitControls enableZoom={true} enablePan={false} enableRotate={false} minDistance={10} maxDistance={40} />
+        <OrbitControls enableZoom={true} enablePan={false} enableRotate={false} minDistance={10} maxDistance={47} />
       </Canvas>
     </div>
   );

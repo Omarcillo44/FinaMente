@@ -5,7 +5,9 @@ export default function Texto2D({
   contenido,
   posicion = [0, 0, 0],
   color = "red",
-  fontSize = 0.5
+  fontSize = 0.5,
+  maxWidth = 10,
+  textAlign = "center"
 }) {
   const scaledFontSize = fontSize * GLOBAL_UI_SETTINGS.TEXT_3D_SCALE_FACTOR;
 
@@ -19,6 +21,8 @@ export default function Texto2D({
           color={color}
           anchorX="center"
           anchorY="middle"
+          maxWidth={maxWidth}
+          textAlign={textAlign}
         // toneMapped={false} garantiza que el color sea exacto al HEX definido
         >
           {contenido}

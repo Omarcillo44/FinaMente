@@ -31,28 +31,28 @@ export default function SeleccionDificultadView() {
         &lt; Volver
       </button>
       <h2 className="text-3xl font-pixel mt-16 md:mt-0 mb-10 text-orange-400">Selecciona la Dificultad</h2>
-      <div className="flex flex-col space-y-6 w-full max-w-sm">
+      <div className="flex flex-col space-y-3 w-full max-w-sm">
         <button
           onClick={() => iniciarYArrancarMotor(PerfilEnum.DEPENDIENTE)}
-          className="bg-blue-600 p-6 rounded-xl hover:bg-blue-500 transition-transform active:scale-95 shadow-lg">
+          className="bg-blue-600 p-3 rounded-xl hover:bg-blue-500 transition-transform active:scale-95 shadow-lg">
           <h3 className="text-2xl font-pixel">Dependiente</h3>
           <p className="text-sm text-blue-200 mt-2">(Ingreso constante de los Padres)</p>
         </button>
         <button
           onClick={() => iniciarYArrancarMotor(PerfilEnum.TRABAJADOR)}
-          className="bg-red-600 p-6 rounded-xl hover:bg-red-500 transition-transform active:scale-95 shadow-lg">
+          className="bg-red-600 p-3 rounded-xl hover:bg-red-500 transition-transform active:scale-95 shadow-lg">
           <h3 className="text-2xl font-pixel">Trabajador a medio tiempo</h3>
           <p className="text-sm text-red-200 mt-2">(Ingreso constante pero con gastos variables)</p>
         </button>
         <button
           onClick={() => iniciarYArrancarMotor(PerfilEnum.INDEPENDIENTE)}
-          className="bg-yellow-600 p-6 rounded-xl hover:bg-yellow-500 transition-transform active:scale-95 shadow-lg">
+          className="bg-yellow-600 p-3 rounded-xl hover:bg-yellow-500 transition-transform active:scale-95 shadow-lg">
           <h3 className="text-2xl font-pixel">Independiente</h3>
           <p className="text-sm text-yellow-200 mt-2">(Ingreso Constante de sueldo)</p>
         </button>
         <button
           onClick={() => iniciarYArrancarMotor(PerfilEnum.NINI)}
-          className="bg-green-600 p-6 rounded-xl hover:bg-green-500 transition-transform active:scale-95 shadow-lg">
+          className="bg-green-600 p-3 rounded-xl hover:bg-green-500 transition-transform active:scale-95 shadow-lg">
           <h3 className="text-2xl font-pixel">Nini</h3>
           <p className="text-sm text-red-200 mt-2">(Sin trabajo, sin ser estudiante, ingresos esporádicos)</p>
         </button>

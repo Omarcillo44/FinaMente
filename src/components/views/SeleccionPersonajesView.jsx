@@ -28,7 +28,7 @@ export default function SeleccionPersonajesView() {
         Tus responsabilidades financieras serán idénticas, pero cada quien tiene su propio estilo de vida.
       </p>
 
-      <div className="flex w-full items-center justify-center space-x-8 md:space-x-16 mb-12">
+      <div className="flex w-full items-center justify-center mb-12" style={{ gap: '40px' }}>
         {personajes.map(personaje => {
           const isSelected = seleccionado === personaje;
           return (
@@ -37,7 +37,10 @@ export default function SeleccionPersonajesView() {
               onClick={() => setSeleccionado(personaje)}
               className={`relative cursor-pointer transition-all duration-300 transform ${isSelected ? 'scale-110 shadow-[0_0_20px_rgba(99,102,241,0.6)]' : 'scale-90 opacity-70 hover:opacity-100 hover:scale-100'}`}
             >
-              <div className={`w-36 h-48 md:w-48 md:h-64 rounded-xl flex flex-col items-center justify-center border-4 ${isSelected ? 'border-indigo-500 bg-indigo-950/40' : 'border-slate-700 bg-slate-800'} overflow-hidden relative`}>
+              <div 
+                className={`rounded-xl flex flex-col items-center justify-center border-4 ${isSelected ? 'border-indigo-500 bg-indigo-950/40' : 'border-slate-700 bg-slate-800'} overflow-hidden relative`}
+                style={{ width: '180px', height: '240px' }}
+              >
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-0"></div>
                 <img 
                   src={`${import.meta.env.BASE_URL}sprites/${personaje}/down-0.png`} 

@@ -25,7 +25,7 @@ export default function RetroalimentacionView() {
       ) : datosPantalla?.tipo === 'analisis_ia' ? (
          <div className="w-full max-w-2xl bg-slate-800 p-8 rounded-2xl shadow-2xl space-y-6 mt-10 mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold text-purple-400 text-center">🧠 Análisis FinaMente IA</h2>
-            <div className={`text-sm sm:text-base p-6 rounded-xl border whitespace-pre-wrap font-sans leading-relaxed ${styleObj}`}>
+            <div className={`text-sm sm:text-base p-6 rounded-xl border whitespace-pre-wrap font-sans leading-relaxed overflow-y-auto max-h-[50vh] scrollbar-thin scrollbar-thumb-purple-500 scrollbar-track-slate-700 ${styleObj}`}>
                 {datosPantalla?.mensaje}
             </div>
             <button onClick={() => cambiarEscena('Inicio')} className="w-full py-4 mt-6 bg-purple-600 hover:bg-purple-500 text-white font-pixel rounded-xl text-lg sm:text-xl shadow font-bold transition-transform active:scale-95">
