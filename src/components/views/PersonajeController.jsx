@@ -5,19 +5,20 @@ import { useGameStore } from '../../store/gameStore';
 
 export const ZONAS_MAPA = {
   // Configuración de hitbox (x, z, radius)
-  'ESCUELA': { x: 50, z: 50, r: 10 },
-  'SUPERMERCADO': { x: 179, z: 123, r: 10 },
-  'CASA': { x: 131, z: 121, r: 10 },
-  'OFICINA': { x: 103, z: 48, r: 10 },
-  'CONSULTORIO': { x: 175, z: 56, r: 10 },
-  'TRANSPORTE': { x: 125, z: 64, r: 10 },
-  'CENTRO_COMERCIAL': { x: 46, z: 126, r: 10 }
+  'ESCUELA': { x: 50, z: 50, r: 4 },
+  'SUPERMERCADO': { x: 179, z: 123, r: 4 },
+  'CASA': { x: 131, z: 121, r: 4 },
+  'OFICINA': { x: 103, z: 48, r: 4 },
+  'CONSULTORIO': { x: 175, z: 56, r: 4 },
+  'TRANSPORTE': { x: 125, z: 64, r: 4 },
+  'CENTRO_COMERCIAL': { x: 46, z: 126, r: 4 }
 };
 
 export default function PersonajeController({ position = [131, 1, 137], inputs, activas = [], onCollision, zonaBloqueada, onZonalibear }) {
   const personajeRef = useRef();
   const materialRef = useRef();
   const { camera } = useThree();
+  const personajeSeleccionado = useGameStore(state => state.personajeSeleccionado) || 'Clemente';
 
   const posRef = useRef(new THREE.Vector3(...position));
 
@@ -39,7 +40,7 @@ export default function PersonajeController({ position = [131, 1, 137], inputs, 
       tex.minFilter = THREE.NearestFilter;
       if (materialRef.current) materialRef.current.map = tex;
     }, undefined, (err) => {
-      textureLoader.load(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`, (fallback) => {
+      textureLoader.load(`${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/down-0.png`, (fallback) => {
         fallback.magFilter = THREE.NearestFilter;
         fallback.minFilter = THREE.NearestFilter;
         if (materialRef.current) materialRef.current.map = fallback;
@@ -136,13 +137,14 @@ export default function PersonajeController({ position = [131, 1, 137], inputs, 
 
     if (prevFrame !== animState.current.frame || prevDir !== currentDir || prevMoving !== isMoving) {
       const textureUrl = isMoving
-        ? `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}/${currentDir}-${animState.current.frame}.png` : `${import.meta.env.BASE_URL}sprites/empleado/${currentDir}-0.png`;
+        ? `${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/${currentDir}/${currentDir}-${animState.current.frame}.png`
+        : `${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/${currentDir}-0.png`;
       applyTexture(textureUrl);
     }
   });
 
   useEffect(() => {
-    applyTexture(`${import.meta.env.BASE_URL}sprites/empleado/down-0.png`);
+    applyTexture(`${import.meta.env.BASE_URL}sprites/${personajeSeleccionado}/down-0.png`);
     return () => {
       // Guardar posición al desmontarse (irse a Batalla)
       useGameStore.getState().setPosicionPersonaje([posRef.current.x, posRef.current.y, posRef.current.z]);

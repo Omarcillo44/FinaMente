@@ -5,7 +5,7 @@ export default function SharedHUD() {
   const headers = useGameStore((state) => state.headers);
 
   return (
-    <div className="absolute top-0 left-0 w-full bg-slate-900/80 text-slate-100 p-2 z-50 flex flex-col gap-2 border-b border-white/20 select-none shadow-lg backdrop-blur-sm shadow-black/50 font-pixel text-[10px] sm:text-xs">
+    <div className="absolute top-0 left-0 w-full bg-slate-900/80 text-slate-100 p-2 z-50 flex flex-col gap-2 border-b border-white/20 select-none shadow-lg backdrop-blur-sm shadow-black/50 font-pixel text-xs sm:text-sm">
       
       {/* Renglón 1: Vida y Progreso */}
       <div className="flex w-full items-center justify-between">

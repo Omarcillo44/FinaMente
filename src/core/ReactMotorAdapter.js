@@ -26,14 +26,14 @@ export class ReactMotorAdapter {
     }
 
     async mostrarSelectorGastosLocalizacion(localizacion, gastos) {
-        this.ultimaLocalizacion = localizacion; 
+        this.ultimaLocalizacion = localizacion;
         return await useGameStore.getState().solicitarInteraccion('Batalla', { modo: 'seleccionar_gasto', localizacion, gastos });
     }
 
     async mostrarMenuGasto(gasto, estadoVirtual, puedeIgnorar, tieneDeuda) {
-        return await useGameStore.getState().solicitarInteraccion('Batalla', { 
+        return await useGameStore.getState().solicitarInteraccion('Batalla', {
             gasto, estadoVirtual, puedeIgnorar, tieneDeuda,
-            localizacion: this.ultimaLocalizacion 
+            localizacion: this.ultimaLocalizacion
         });
     }
 
@@ -44,7 +44,7 @@ export class ReactMotorAdapter {
 
     async mostrarSelectorMSI(opcionesCuotas) {
         // Lo redirigimos a Batalla con un flag para mostrar los MSI
-        return await useGameStore.getState().solicitarInteraccion('Batalla', { 
+        return await useGameStore.getState().solicitarInteraccion('Batalla', {
             modo: 'msi', opcionesCuotas,
             localizacion: this.ultimaLocalizacion
         });
@@ -52,7 +52,7 @@ export class ReactMotorAdapter {
 
     async mostrarMenuDisposicionObligatoria(gasto, maxRetiro, comisionPct) {
         // Redirigimos a Batalla con un flag para retiro urgente
-        return await useGameStore.getState().solicitarInteraccion('Batalla', { 
+        return await useGameStore.getState().solicitarInteraccion('Batalla', {
             modo: 'retiroObligatorio', gasto, maxRetiro, comisionPct,
             localizacion: this.ultimaLocalizacion
         });
@@ -106,7 +106,7 @@ export class ReactMotorAdapter {
     mostrarCambioScore(mensaje, tipo, nuevoScore) {
         // En un caso real podría no pausar toda la pantalla y usarse un Toast.
         // Por ahora lo mandamos a Retroalimentacion
-        if(mensaje) {
+        if (mensaje) {
             useGameStore.getState().cambiarEscena('Retroalimentacion', { tipo: tipo || 'info', mensaje, score: nuevoScore });
         }
     }
@@ -122,7 +122,7 @@ export class ReactMotorAdapter {
     mostrarInicioSemana(stage, semana) {
         useGameStore.getState().cambiarEscena('Retroalimentacion', { tipo: 'titulo', mensaje: `Mes ${stage} - Semana ${semana}` });
     }
-    
+
     mostrarCancelacionUsuario() {
         // Abandonó el juego
         console.log("Abandonaste el juego");
