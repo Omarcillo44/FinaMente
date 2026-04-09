@@ -1,6 +1,6 @@
 # Documentación Técnica del Frontend - FinaMente (React + Three.js)
 
-Este documento describe la arquitectura y el flujo de los componentes en el frontend de **FinaMente**, el cual actúa como una "Capa de Presentación" construida en React y `@react-three/fiber` en torno a un Motor Lógico preexistente.
+Este documento describe la arquitectura y el flujo de los componentes en el frontend de **FinaMente**, el cual actúa como una "Capa de Presentación" construida en React y `@react-three/fiber` en torno a un Motor Lógico preexistente. *(Nota: Esta documentación pertenece estrictamente al Front-End. Los entresijos lógicos y secuenciales matemáticos residen blindados dentro del Motor).*
 
 ---
 
@@ -10,68 +10,62 @@ Dado que el `MotorJuego` es un algoritmo secuencial bloqueante basado en Promesa
 
 ### 1.1 El Gestor Global de Estado (`Zustand`)
 En `src/store/gameStore.js` reside nuestro estado global vital:
-* **`escenaActual`**: (Ej. `'Inicio'`, `'Mapa'`, `'Batalla'`) Le dice a React qué vista mayor montar.
+* **`escenaActual`**: (Ej. `'Inicio'`, `'Mapa'`, `'Batalla'`) Le dice a React qué componente raíz principal montar.
 * **`datosPantalla`**: Todo el contexto que necesita esa escena en ese momento (ej. un array de opciones de compras o el nombre de una localización).
 * **`historialIA`**: El respaldo del objeto *JSON masivo* procesado al final del juego para entregarlo a Ngrok y la IA.
-* **`resolverPromesa`**: La función nativa `resolve()` de Javascript en pausa. Cuando cualquier botón de la Interfaz la ejecuta, el Motor de Juego que estaba congelado prosigue con su lógica.
+* **`resolverPromesa`**: La función nativa `resolve()` de Javascript en pausa. Cuando cualquier botón de la Interfaz la ejecuta, el Motor de Juego que estaba congelado prosigue con su lógica matemática.
 
 ### 1.2 El Adaptador Asíncrono (`ReactMotorAdapter.js`)
-El motor de juego solicita vistas a través de interfaces declarativas. En lugar de ejecutar `console.log()` o `prompt()` como en la demo por consola, el _Adapter_ intercepta todo:
-
+El motor de juego solicita vistas a través de interfaces declarativas. El _Adapter_ intercepta los mensajes de texto del núcleo:
 1. El motor pide: `await adaptador.mostrarMenuGasto(...)`
-2. El *Adapter* despacha al estado: `useGameStore.getState().solicitarInteraccion('Batalla', datosDelMenu)`
-3. React reacciona al store de Zustand montando `BatallaView.jsx` y pintando los botones en la pantalla con la info.
-4. Cuando el jugador pulsa en "Pagar con MSI", el código UI invoca `resolverPromesa('m')`.
-5. El *Adapter* recibe el evento 'm', la Promesa interna hace `resolve('m')` devolviendo el control al MotorJuego, el cual continúa sus matemáticas.
+2. El *Adapter* despacha al estado general: `useGameStore.getState().solicitarInteraccion('Batalla', datosDelMenu)`
+3. React reacciona al hook de Zustand montando `BatallaView.jsx` y pintando localmente en base a las variables.
+4. Cuando el jugador pulsa un botón en la interfaz, el código UI invoca `resolverPromesa('respuesta')`.
+5. El *Adapter* escucha la resolución y devuelve la variable al Engine, el cual continúa su operación como si nunca se hubiera pausado.
 
 ---
 
 ## 2. Flujo de Navegación del Jugador
 
-El juego transita de la siguiente manera administrada visualmente por los Hooks:
+### 2.1 Preparación 2D y Cinemáticas (TailwindCSS)
+El flujo estricto inicial sigue la ruta: 
+`InicioView` ➜ `SeleccionPersonajesView` ➜ `VideoPersonajeView` ➜ `SeleccionDificultadView`
 
-### Fases de Preparación 2D (TailwindCSS)
-* `InicioView` ➜ `SeleccionPersonajesView` ➜ `SeleccionDificultadView`
-* En **SeleccionDificultadView**, es el momento del _Big Bang_. Al darle al botón de un grado de dificultad, **creamos la instancia enlazada de `ReactMotorAdapter` y `MotorJuego` simultáneamente arrastrando las callbacks**, e inicializamos la cascada asíncrona mediante `motor.iniciarJuego(perfil)`.
+* **`VideoPersonajeView`**: Reproduce la cinemática propia del avatar elegido mediante archivos mp4 dinámicos (ej: `public/videos/amanda.mp4`). Contiene soporte de _Fallback_ puro en pantalla negra en caso de archivos borrados del caché local y botones universales para evitar bloqueos del jugador (Omitir / Continuar).
+* **`SeleccionDificultadView`**: Construida como una cuadrícula Jumbo (3/4 de pantalla). Es el momento del _Big Bang_ del flujo. Al seleccionar el perfil socioeconómico, **creamos la instancia enlazada de `ReactMotorAdapter` y `MotorJuego` simultáneamente**, inicializando la cascada asíncrona mediante `motor.iniciarJuego(perfil)`.
 
-### El Núcleo Físico en 3D (R3F)
-* Una vez el Motor empieza a correr, pedirá que te dirijas a ciertas partes de la ciudad. El adaptador inyecta la escena `'Mapa'` desencadenando a `MapaView.jsx`.
+### 2.2 El Núcleo Físico en 3D (R3F)
+Una vez el Motor arranca, solicitará por primera vez desplazamientos hacia ubicaciones en la ciudad en el plano XZ, desencadenando la vista mayor tipo mundo interactivo en `MapaView.jsx`.
 
 ---
 
-## 3. Mapas 3D y Detección de Colisiones (Hitboxes)
+## 3. Mapas 3D y HUD Dinámico
 
-### 3.1 `MapaView.jsx`
+### 3.1 `MapaView.jsx` y Pestaña Deslizable
 Implementa `<Canvas>` de `@react-three/fiber` para pintar el mundo tridimensional.
-* Contiene el **Joystick** virtual en 2D superpuesto (`HTML overlay`), y pasa los inputs `[W,A,S,D]` o del Stick Virtual en formato booleano (`left: true`, etc) hacia adentro del Canvas.
-* Presenta modales independientes como **La Banca Móvil**, **Créditos** o el propio menú de **Pausa** (este apaga/enciende la música contenida en `AudioGlobal`).
+* **HUD Deslizable**: Posee una lengüeta superior retráctil que permite ocular toda la interfaz estática compartida (`SharedHUD`, Menús Acoplables, Lista de Misiones) deslizándolas simétricamente fuera de los bordes de la pantalla (translaciones CSS Hardware Accelerated). Así el usuario experimenta una visión total de las ubicaciones sin distracciones gráficas.
+* Contiene modales independientes con prioridades z-index robustas (`100+`) para  sobreponerse al 3D, incluyendo **Banca Móvil**, **Croquis**, y la matriz de **Pausa**.
 
-### 3.2 El Control de Físicas y Avatar (`PersonajeController.jsx`)
-No usamos *Rapier* ni motores colisionadores masivos pesados para móvil, sino trigonometría clásica puramente responsiva en un `useFrame()`:
-* **Movimiento**: Aplica traslación simple (`position.x`, `position.z`) basado en Deltas y los Inputs direccionales.
-* **Bounding Box General**: Restringe al jugador con un set de `11 < X < 198` y `20 < Z < 151` simulando la valla de la ciudad para evitar caer al vacío.
-* **El Arreglo `ZONAS_MAPA` (Hitboxes)**: Puntos (`x`,`z`) con un radio (`r`). El controlador calcula en tiempo real si el vector XZ actual pisa el radio de una zona. Si pisas un radio *esperado por el motor*, se despacha automáticamente el colisionador congelando el movimiento y resolviendo la promesa para transportar el juego a `'Batalla'`.
+### 3.2 Indicadores Visuales en tiempo real (Flechas 3D)
+La visualización en vivo implementa el parseo automático de tus tareas y misiones. React detecta las variables activas publicadas por el Adaptador, itera los localizadores exactos en `ZONAS_MAPA` y teletransporta el archivo `Flechas.glb` cargándolas en malla amarilla vibrante iluminada (`MeshStandardMaterial`), rotando rápida y centradamente (`drei Center`) sobre sí misma animada con `useFrame`. Cuando el jugador cumple una misión, la flecha de esa zona física del pueblo desaparece inmediatamente del cielo.
+
+### 3.3 El Controlador Físico y Zonas Seguras (`PersonajeController.jsx`)
+Usa trigonometría pura y clásica (evitando la sobrecarga térmica y peso de un motor de colisiones físico como Rapier) dentro de del loop animado (`useFrame()`):
+* Restringe límites (`Bounding Box General`) para que el personaje no caiga o se salga del mapa mediante barreras rígidas en X y Z.
+* Evalúa `ZONAS_MAPA` (los Hitboxes): Mediante una comprobación de hipotenusa y radio circular en tiempo real verifica si el vector XZ está pisando la puerta del objetivo. Si pisas el radio local *solicitado en el array del motor*, se despacha colisión segura bloqueando ese vector temporalmente, y transportándote visualmente en React a `'Batalla'`.
 
 ---
 
 ## 4. El "Battle System" Financiero (`BatallaView.jsx`)
 
-Es un Canvas puramente estático diseñado para parecerse a un RPG:
-* **`EscenarioDinamico`**: En vez de quemar 1 solo escenario, agarra el `String` emitido de forma persistente desde el `ReactMotorAdapter`, lo parsea (e.g., `Escenario_Centro_Comercial.glb`) y dibuja en 3D el cuarto de forma dinámica detrás del menú. Tiene un sistema de `ErrorBoundary` nativo atrapando errores Promise Suspense inyectando la *Recamara* como paracaídas estético si el archivo no existe.
-* **`Texto2D` y `Html`**: Extraemos los datos numéricos enviados por el motor y usamos el tag `<Html center>` de Drei para anclar etiquetas HTML dinámicas flotando perfectamente ubicadas sobre los modelos importados 3D simulando stats sobre sus cuellos.
+Diseñado simulando la escenografía de los combates de un RPG por turnos con controles financieros de pago estricto.
+* **Restricción y Sanitización Local**: Operaciones sensibles como "Negociar M.S.I." primero ejecutan lógicas condicionales locales estrictas en React. Si tu billetera/saldo de tarjeta no puede soportarlo, React levanta el aviso modal nativo de estatus (`StatusFeedback`) de manera suave, interrumpiendo el flujo del clic y evitando escupir variables ilegales en formato inyección de vuelta al Algoritmo Base. El motor matemático se mantiene completamente puro e ignora los _missclicks_ del jugador.
+* **Escenografía Dinámica `EscenarioDinamico`**: Componente asíncrono que detecta el nombre crudo de la plaza enviado por el Engine y renderiza el `.glb` adecuado para vestir el fondo tridimensional (`Escenario_Centro_Comercial.glb`). Para mitigar vulnerabilidades, cuenta con un robusto _ErrorBoundary_ nativo que cargará el paracaídas visual de la "Habitación" sin crashear el loop en caso de problemas de RAM en móviles, o una falta de archivo accidental.
 
 ---
 
-## 5. Game Over e Integración de Analítica de Inteligencia Artificial
+## 5. Salida e Inteligencia Artificial (Feedback / Prompts)
 
-* Las salidas del juego (` GameOverView.jsx `) por perder HP, sufrir insolvencia extrema o terminar voluntariamente desde la escena de Pausa desembocan en el acaparamiento seguro del `historialIA`.
-* Ya que la plataforma exige conexión transparente de navegador a Backend/Python, evitamos el temido `500 Server Error` implementando directamente el Header:
-  `'ngrok-skip-browser-warning': 'true'`
-* Esto transporta de forma segura nuestro String masivo con la información de todos los pasos hacia el servidor python `ngrok`, para finalmente resolver la Vista con la ruta `"Retroalimentacion"` y renderizar el panel grande morado de feedback IA.
-
----
-
-## 6. Detalles Estéticos & Assets
-Todos los recursos estandarizados en base a React Vite:
-* **Modelos `glb`**: Cuelgan directamente de `public/models/` y son recuperados mediante `useGLTF`. Importante no borrar/renombrar en disco los sufijos `.glb` sin antes replicarlos.
-* **Música (`AudioGlobal.js`)**: Encapsulada como singletons `new Audio(...)` fuera del árbol reactivo para evitar solapamientos violentos si React destruye componentes padre al redibujar escenarios.
+* Las interrupciones críticas generadas del gestor (`GameOverView.jsx`) como perder los puntos de vida o insolvencia, desembocan en el vaciado forzado final de tu JSON `historialIA`.
+* Ya que la arquitectura incluye comunicación hacia Backends aislados (Ejemplo uso con Python y Tunneling Externo), ejecutamos peticiones blindadas inyectando localmente headers puente (e.g. `ngrok-skip-browser-warning: true`).
+* Resuelta la asincronía y el parseo del Endpoint Python/Gemini, se dispara como última vista reactiva el `RetroalimentacionView`, inyectando la cadena textual estructurada, brindándole de forma natural todo el contexto al fin del juego.
