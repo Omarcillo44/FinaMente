@@ -16,31 +16,31 @@ export default function RetroalimentacionView() {
   };
 
   const styleObj = getStylePorTipo(datosPantalla?.tipo);
-  
+
   return (
     <div className={`w-full h-full flex flex-col items-center justify-center p-6 text-slate-100 font-pixel ${datosPantalla?.tipo === 'analisis_ia' ? 'bg-slate-950 overflow-y-auto' : 'bg-slate-900'}`}>
-      
+
       {datosPantalla?.tipo === 'titulo' ? (
-         <h1 className="text-4xl font-bold text-center text-blue-400 animate-pulse">{datosPantalla?.mensaje}</h1>
+        <h1 className="text-4xl font-bold text-center text-blue-400 animate-pulse">{datosPantalla?.mensaje}</h1>
       ) : datosPantalla?.tipo === 'analisis_ia' ? (
-         <div className="w-full max-w-2xl bg-slate-800 p-8 rounded-2xl shadow-2xl space-y-6 mt-10 mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-purple-400 text-center">🧠 Análisis FinaMente IA</h2>
-            <div className={`text-sm sm:text-base p-6 rounded-xl border whitespace-pre-wrap font-sans leading-relaxed overflow-y-auto max-h-[50vh] scrollbar-thin scrollbar-thumb-purple-500 scrollbar-track-slate-700 ${styleObj}`}>
-                {datosPantalla?.mensaje}
-            </div>
-            <button onClick={() => cambiarEscena('Inicio')} className="w-full py-4 mt-6 bg-purple-600 hover:bg-purple-500 text-white font-pixel rounded-xl text-lg sm:text-xl shadow font-bold transition-transform active:scale-95">
-                 Finalizar y Volver al Menú
-            </button>
-         </div>
+        <div className="w-full max-w-2xl bg-slate-800 p-8 rounded-2xl shadow-2xl space-y-6 mt-10 mb-10">
+          <h2 className="text-2xl sm:text-3xl font-bold text-purple-400 text-center">🧠 Análisis FinaMente IA</h2>
+          <div className={`text-sm sm:text-base p-6 rounded-xl border whitespace-pre-wrap font-sans leading-relaxed overflow-y-auto max-h-[50vh] scrollbar-thin scrollbar-thumb-purple-500 scrollbar-track-slate-700 ${styleObj}`}>
+            {datosPantalla?.mensaje}
+          </div>
+          <button onClick={() => window.location.reload()} className="w-full py-4 mt-6 bg-purple-600 hover:bg-purple-500 text-white font-pixel rounded-xl text-lg sm:text-xl shadow font-bold transition-transform active:scale-95">
+            Finalizar y Volver al Menú
+          </button>
+        </div>
       ) : (
         <div className="w-full max-w-md bg-slate-800 p-6 rounded-2xl shadow-xl space-y-6 text-center">
-            <h2 className="text-2xl font-bold mb-4">Aviso de Sistema</h2>
-            <p className={`text-lg p-4 rounded-lg border-l-4 ${styleObj}`}>
-                {datosPantalla?.mensaje}
-            </p>
-            {datosPantalla?.score !== undefined && (
-                <p className="mt-4 text-emerald-300 font-bold">Nuevo Score Crediticio: {datosPantalla.score}</p>
-            )}
+          <h2 className="text-2xl font-bold mb-4">Aviso de Sistema</h2>
+          <p className={`text-lg p-4 rounded-lg border-l-4 ${styleObj}`}>
+            {datosPantalla?.mensaje}
+          </p>
+          {datosPantalla?.score !== undefined && (
+            <p className="mt-4 text-emerald-300 font-bold">Nuevo Score Crediticio: {datosPantalla.score}</p>
+          )}
         </div>
       )}
 

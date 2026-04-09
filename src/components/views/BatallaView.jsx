@@ -6,6 +6,7 @@ import { useGameStore } from '../../store/gameStore';
 import Texto2D from '../ui/Texto2D';
 import SharedHUD from '../ui/SharedHUD';
 import BancaMovilView from './BancaMovilView';
+import StatusFeedback from '../ui/StatusFeedback';
 
 // ---------------- CONSTANTES DE CÁMARA ----------------
 const CAM_POS = [0, 15, 35];
@@ -202,6 +203,9 @@ export default function BatallaView() {
   const [playerAnim, setPlayerAnim] = useState('wait');
   const [pendingResolution, setPendingResolution] = useState(null);
 
+  // Para mostrar error si el MSI no está disponible sin salir del combate
+  const [localFeedbackMsg, setLocalFeedbackMsg] = useState(null);
+
   const handleActionClick = (actionValue, animationType) => {
     if (!resolverPromesa || pendingResolution) return;
     // Si hay animacion ('punch', 'kick'), preparamos estado.
@@ -234,10 +238,20 @@ export default function BatallaView() {
       {/* BANCA MOVIL INTERCEPT */}
       {datosPantalla?.modo === 'banca' && <BancaMovilView />}
 
+      {/* OVERLAY DE ERROR LOCAL (ej. MSI Inválido) */}
+      {localFeedbackMsg && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-md z-[100] pointer-events-auto">
+          <div className="bg-white px-12 py-10 rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col items-center animate-fade-in-up">
+            <StatusFeedback tipo="peligro" />
+            <p className="mt-4 text-red-500 font-pixel text-xs sm:text-sm text-center font-bold whitespace-pre-wrap">{localFeedbackMsg}</p>
+          </div>
+        </div>
+      )}
+
       {/* CABECERA (Z-10) */}
-      <div className="absolute top-20 left-0 w-full px-6 flex justify-between items-start pointer-events-none z-10">
+      <div className="absolute top-32 left-0 w-full px-6 flex justify-between items-start pointer-events-none z-10">
         <h2 className="bg-slate-900/80 px-6 py-2 rounded-lg text-red-500 font-pixel text-xl shadow-lg border border-red-900/50">
-          🔥 {loc.toUpperCase()}
+          {loc.toUpperCase()}
         </h2>
       </div>
 
@@ -255,7 +269,7 @@ export default function BatallaView() {
             <>
               <div className="col-span-2 text-center text-sm text-gray-400 mb-2">Apunta al Enemigo en pantalla para atacarlo</div>
               <button onClick={() => handleActionClick('s', null)} className="col-span-2 py-4 bg-slate-700 hover:bg-slate-600 text-white font-pixel rounded-lg transition-transform active:scale-95 border border-slate-500 shadow-md">
-                🏃 HUIDA TÁCTICA (Cerrar Batalla)
+                HUIDA TÁCTICA (Cerrar Batalla)
               </button>
             </>
           )}
@@ -275,11 +289,18 @@ export default function BatallaView() {
 
               {datosPantalla?.puedeIgnorar ? (
                 <button onClick={() => handleActionClick('i', null)} className="py-3 col-span-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-pixel rounded-lg shadow border border-slate-600 transition-transform active:scale-95">
-                  🛡️ Ignorar Gasto (-20 HP)
+                  Ignorar Gasto (-20 HP)
                 </button>
               ) : (
-                <button onClick={() => handleActionClick('m', null)} className="py-3 col-span-2 bg-purple-700 hover:bg-purple-600 text-purple-100 font-pixel rounded-lg shadow border border-purple-500 transition-transform active:scale-95">
-                  🌟 Negociar a M.S.I.
+                <button onClick={() => {
+                  if (datosPantalla?.gasto && !datosPantalla.gasto.aceptaMSI) {
+                    setLocalFeedbackMsg("Este gasto no admite\nMeses Sin Intereses.");
+                    setTimeout(() => setLocalFeedbackMsg(null), 2500);
+                  } else {
+                    handleActionClick('m', null);
+                  }
+                }} className="py-3 col-span-2 bg-purple-700 hover:bg-purple-600 text-purple-100 font-pixel rounded-lg shadow border border-purple-500 transition-transform active:scale-95">
+                  Negociar a M.S.I.
                 </button>
               )}
             </>
@@ -291,7 +312,7 @@ export default function BatallaView() {
               <p className="text-center text-purple-300 font-pixel mb-2">Selecciona Mensualidades:</p>
               {datosPantalla.opcionesCuotas.map(cuota => (
                 <button key={cuota} onClick={() => handleActionClick(cuota.toString(), 'punch')} className="py-3 bg-purple-700 hover:bg-purple-600 rounded-lg font-pixel">
-                  [👊 Punch] {cuota} Meses
+                  [Puño] {cuota} Meses
                 </button>
               ))}
               <button onClick={() => handleActionClick('c', null)} className="py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-pixel text-gray-300">
@@ -303,7 +324,7 @@ export default function BatallaView() {
           {mode === 'retiroObligatorio' && (
             <div className="col-span-2">
               <button onClick={() => handleActionClick('y', 'kick')} className="w-full py-4 bg-red-700 hover:bg-red-600 text-white rounded-lg font-pixel mb-2">
-                [🦵 Kick] Pagar Asumiendo Comisión ({datosPantalla.maxRetiro})
+                [Patada] Pagar Asumiendo Comisión ({datosPantalla.maxRetiro})
               </button>
               <button onClick={() => handleActionClick('n', null)} className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded-lg font-pixel">
                 Asumir Insolvencia (Game Over)

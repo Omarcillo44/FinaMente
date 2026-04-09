@@ -6,7 +6,7 @@ import { useGameStore } from '../../store/gameStore';
 
 export default function SeleccionDificultadView() {
   const cambiarEscena = useGameStore(state => state.cambiarEscena);
-  
+
   const iniciarYArrancarMotor = async (perfil) => {
     // 1. Instanciar el Adaptador "puente"
     const adaptador = new ReactMotorAdapter();
@@ -16,7 +16,7 @@ export default function SeleccionDificultadView() {
 
     // Conectar el callback nativo del motor para recolectar el JSON analítico de la API
     motor.onGameOver = async (datosJSON) => {
-        useGameStore.getState().setHistorialIA(datosJSON);
+      useGameStore.getState().setHistorialIA(datosJSON);
     };
 
     // 3. Arrancar el bucle del juego en background 
@@ -24,37 +24,49 @@ export default function SeleccionDificultadView() {
     motor.iniciarJuego(perfil);
   };
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-white p-6 text-center relative overflow-y-auto">
-      <button 
-        onClick={() => cambiarEscena('SeleccionPersonaje')}
-        className="absolute md:top-6 md:left-6 top-3 left-3 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded font-pixel text-sm text-gray-300 border border-slate-600 z-10">
-        &lt; Volver
-      </button>
-      <h2 className="text-3xl font-pixel mt-16 md:mt-0 mb-10 text-orange-400">Selecciona la Dificultad</h2>
-      <div className="flex flex-col space-y-3 w-full max-w-sm">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-white relative overflow-hidden">
+
+      {/* HEADER TOP BAR */}
+      <div className="absolute top-0 left-0 w-full flex items-center justify-center p-4 md:p-6 z-10">
+        <button
+          onClick={() => cambiarEscena('SeleccionPersonaje')}
+          className="absolute top-4 left-4 md:top-6 md:left-6 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded font-pixel text-xs md:text-sm text-gray-300 border border-slate-600 shadow-md transition-transform active:scale-95">
+          &lt; Volver
+        </button>
+      </div>
+
+      <div className="mt-12">
+        <h2 className="text-xl md:text-3xl font-pixel text-orange-400 drop-shadow-md">Selecciona la Dificultad</h2>
+      </div>
+
+      {/* JUMBO GRID 3/4 de PANTALLA */}
+      <div className="grid grid-cols-2 gap-4 md:gap-8 w-[90vw] md:w-[75vw] h-[75vh] max-w-5xl mt-12 md:mt-20">
         <button
           onClick={() => iniciarYArrancarMotor(PerfilEnum.DEPENDIENTE)}
-          className="bg-blue-600 p-3 rounded-xl hover:bg-blue-500 transition-transform active:scale-95 shadow-lg">
-          <h3 className="text-2xl font-pixel">Dependiente</h3>
-          <p className="text-sm text-blue-200 mt-2">(Ingreso constante de los Padres)</p>
+          className="bg-blue-600 p-4 md:p-8 rounded-2xl hover:bg-blue-500 transition-transform active:scale-[0.98] shadow-2xl flex flex-col items-center justify-center h-full w-full border-b-8 border-blue-800 active:border-b-0 active:translate-y-2">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-pixel text-center">Dependiente</h3>
+          <p className="text-[13px] md:text-xs lg:text-sm text-blue-200 mt-2 md:mt-4 px-2 text-center max-w-xs leading-relaxed">Estudiante con ingreso constante de tutor/es, gastos exclusivos como Estudiante (FACIL)</p>
         </button>
+
         <button
           onClick={() => iniciarYArrancarMotor(PerfilEnum.TRABAJADOR)}
-          className="bg-red-600 p-3 rounded-xl hover:bg-red-500 transition-transform active:scale-95 shadow-lg">
-          <h3 className="text-2xl font-pixel">Trabajador a medio tiempo</h3>
-          <p className="text-sm text-red-200 mt-2">(Ingreso constante pero con gastos variables)</p>
+          className="bg-red-600 p-4 md:p-8 rounded-2xl hover:bg-red-500 transition-transform active:scale-[0.98] shadow-2xl flex flex-col items-center justify-center h-full w-full border-b-8 border-red-800 active:border-b-0 active:translate-y-2">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-pixel text-center leading-tight">Trabajador a medio tiempo</h3>
+          <p className="text-[13px] md:text-xs lg:text-sm text-red-200 mt-2 md:mt-4 px-2 text-center max-w-xs leading-relaxed">Estudiar y Trabajar, gastos como Estudiante y apoyos en hogar (NORMAL)</p>
         </button>
+
         <button
           onClick={() => iniciarYArrancarMotor(PerfilEnum.INDEPENDIENTE)}
-          className="bg-yellow-600 p-3 rounded-xl hover:bg-yellow-500 transition-transform active:scale-95 shadow-lg">
-          <h3 className="text-2xl font-pixel">Independiente</h3>
-          <p className="text-sm text-yellow-200 mt-2">(Ingreso Constante de sueldo)</p>
+          className="bg-yellow-600 p-4 md:p-8 rounded-2xl hover:bg-yellow-500 transition-transform active:scale-[0.98] shadow-2xl flex flex-col items-center justify-center h-full w-full border-b-8 border-yellow-800 active:border-b-0 active:translate-y-2">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-pixel text-center">Independiente</h3>
+          <p className="text-[13px] md:text-xs lg:text-sm text-yellow-200 mt-2 md:mt-4 px-2 text-center max-w-xs leading-relaxed">Joven Empleado con ingresos Constantes, gastos de hogar y trabajo (DIFICIL)</p>
         </button>
+
         <button
           onClick={() => iniciarYArrancarMotor(PerfilEnum.NINI)}
-          className="bg-green-600 p-3 rounded-xl hover:bg-green-500 transition-transform active:scale-95 shadow-lg">
-          <h3 className="text-2xl font-pixel">Nini</h3>
-          <p className="text-sm text-red-200 mt-2">(Sin trabajo, sin ser estudiante, ingresos esporádicos)</p>
+          className="bg-green-600 p-4 md:p-8 rounded-2xl hover:bg-green-500 transition-transform active:scale-[0.98] shadow-2xl flex flex-col items-center justify-center h-full w-full border-b-8 border-green-800 active:border-b-0 active:translate-y-2">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-pixel text-center">Nini</h3>
+          <p className="text-[13px] md:text-xs lg:text-sm text-green-200 mt-2 md:mt-4 px-2 text-center max-w-xs leading-relaxed">Sin Trabajo y no estudias solo gastas, ingresos esporadicos de "Apoyos" (REALIDAD MEXICANA)</p>
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { useGLTF, OrbitControls } from '@react-three/drei';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useGLTF, OrbitControls, Center } from '@react-three/drei';
+import * as THREE from 'three';
 import PersonajeController, { ZONAS_MAPA } from './PersonajeController';
 import Joystick from './Joystick';
 import SharedHUD from '../ui/SharedHUD';
@@ -10,11 +11,45 @@ import { useGameStore } from '../../store/gameStore';
 import { pausarMusicaGlobal, reanudarMusicaGlobal, detenerMusicaGlobal } from '../../core/AudioGlobal';
 
 const URL_MAPA = `${import.meta.env.BASE_URL}models/Mapa.glb`;
+const URL_FLECHA = `${import.meta.env.BASE_URL}models/Flecha.glb`;
 
 function EscenarioMapa() {
   const { scene } = useGLTF(URL_MAPA);
-  // Rotación de 90° que tenías previamente
   return <primitive object={scene} rotation={[0, 3 * Math.PI / 2, 0]} />;
+}
+
+function FlechaIndicador({ position }) {
+  const { scene } = useGLTF(URL_FLECHA);
+  const copiedScene = useMemo(() => scene.clone(), [scene]);
+  const meshRef = useRef();
+
+  useEffect(() => {
+    copiedScene.traverse((child) => {
+      if (child.isMesh) {
+        child.material = new THREE.MeshStandardMaterial({
+          color: 0xffea00,
+          emissive: 0xffaa00,
+          emissiveIntensity: 0.6,
+          roughness: 0.1
+        });
+      }
+    });
+  }, [copiedScene]);
+
+  useFrame(({ clock }, delta) => {
+    if (meshRef.current) {
+      meshRef.current.position.y = position[1] + Math.sin(clock.getElapsedTime() * 5) * 1;
+      meshRef.current.rotation.y += delta * 2;
+    }
+  });
+
+  return (
+    <group ref={meshRef} position={position}>
+      <Center>
+        <primitive object={copiedScene} scale={[1, 1, 1]} />
+      </Center>
+    </group>
+  );
 }
 
 export default function MapaView() {
@@ -22,10 +57,10 @@ export default function MapaView() {
   const [inputs, setInputs] = useState({ up: false, down: false, left: false, right: false });
 
   // Drawers UI
-  const [showMisiones, setShowMisiones] = useState(false);
   const [showMapaImg, setShowMapaImg] = useState(false);
   const [showPausa, setShowPausa] = useState(false);
   const [showCreditosOverlay, setShowCreditosOverlay] = useState(false);
+  const [showHUD, setShowHUD] = useState(true);
 
   const handlePausar = () => {
     pausarMusicaGlobal();
@@ -102,35 +137,49 @@ export default function MapaView() {
     <div className="w-full h-full relative bg-slate-900 font-pixel">
 
       {/* HUD COMPARTIDO */}
-      <SharedHUD />
+      <SharedHUD className={`transition-transform duration-500 ease-in-out ${showHUD ? 'translate-y-0' : '-translate-y-[150%]'}`} />
 
       {/* OVERLAY BANCA MOVIL */}
       {datosPantalla?.modo === 'banca' && <BancaMovilView />}
 
-      {/* BOTÓN PAUSA (Derecha) */}
-      <div className="absolute top-20 right-4 z-50">
-        <button
-          onClick={handlePausar}
-          className="bg-red-700 hover:bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-full font-pixel shadow opacity-90 border-2 border-red-500 text-sm active:scale-95 transition-transform">
-          ⏸
-        </button>
+      {/* TIRETA DE OCULTAR HUD */}
+      <button
+        onClick={() => setShowHUD(!showHUD)}
+        className={`absolute left-1/2 -translate-x-1/2 z-50 bg-slate-800/90 text-sky-200 rounded-b-xl px-4 py-1.5 text-[10px] md:text-xs border border-t-0 border-slate-600 shadow-lg font-pixel hover:bg-slate-700 transition-all duration-500 ease-in-out select-none hover:text-white ${showHUD ? 'top-[138px] md:top-[104px]' : 'top-0'}`}
+      >
+        {showHUD ? "▲ Ocultar UI" : "▼ Mostrar UI"}
+      </button>
+
+      {/* MISIONES (Izquierda superior, fijas) */}
+      <div className={`absolute top-32 left-4 z-40 bg-slate-800/80 border border-slate-600 rounded-xl p-4 text-white shadow-xl backdrop-blur min-w-[200px] pointer-events-none transition-transform duration-500 ease-in-out ${showHUD ? 'translate-x-0' : '-translate-x-[150%]'}`}>
+        <h3 className="text-sm text-indigo-300 border-b border-white/20 pb-2 mb-2 font-bold uppercase tracking-widest">Pendientes</h3>
+        <ul className="space-y-2 text-xs text-slate-300">
+          {arrLocalizaciones.length === 0 && <li>Ninguna tarea pendiente.</li>}
+          {arrLocalizaciones.map((loc, idx) => (
+            <li key={idx} className="flex items-center space-x-2">
+              <span className="text-emerald-400">»</span> <span>Ir a {loc}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      {/* BOTONES PARA ABRIR CAJONES (Izquierda) */}
-      <div className="absolute top-20 left-4 z-50 flex flex-col space-y-2 items-start">
+      {/* BOTONES DERECHA (Pausa, Croquis, Banca) */}
+      <div className={`absolute top-32 right-4 z-50 flex flex-col space-y-3 items-end transition-transform duration-500 ease-in-out ${showHUD ? 'translate-x-0' : 'translate-x-[150%]'}`}>
         <button
-          onClick={() => setShowMisiones(!showMisiones)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg font-pixel shadow opacity-90 border border-indigo-400 text-xs">
-          📋 Pendientes
+          onClick={handlePausar}
+          className="bg-red-700 hover:bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-full font-bold shadow opacity-90 border-2 border-red-500 text-sm active:scale-95 transition-transform tracking-tighter">
+          ||
         </button>
+
         <button
           onClick={() => setShowMapaImg(!showMapaImg)}
-          className="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-lg font-pixel shadow opacity-90 border border-sky-400 text-xs">
+          className="bg-sky-600 hover:bg-sky-500 text-white px-3 py-2 rounded-lg font-pixel shadow border border-sky-400 text-xs transition-transform active:scale-95 flex items-center gap-2">
           🗺️ Croquis
         </button>
+
         <button
           onClick={() => resolverPromesa && resolverPromesa('p')}
-          className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg font-pixel shadow opacity-90 border border-purple-400 text-xs">
+          className="bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-lg font-pixel shadow border border-purple-400 text-xs transition-transform active:scale-95 flex items-center gap-2">
           📱 Banca
         </button>
       </div>
@@ -140,39 +189,17 @@ export default function MapaView() {
         X: - | Z: -
       </div>
 
-      {/* DRAWER MISIONES */}
-      {showMisiones && (
-        <div className="absolute top-36 left-4 z-50 w-64 bg-slate-800/95 border border-slate-600 rounded-xl p-4 text-white shadow-xl backdrop-blur">
-          <div className="flex justify-between items-start mb-3 border-b border-white/20 pb-2">
-            <h3 className="text-xl text-indigo-300">Pendientes:</h3>
-            <button onClick={() => setShowMisiones(false)} className="text-slate-400 hover:text-white font-bold bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5 text-base leading-none">×</button>
-          </div>
-          <ul className="space-y-2 text-sm text-slate-300">
-            {arrLocalizaciones.length === 0 && <li>Ninguna tarea pendiente.</li>}
-            {arrLocalizaciones.map((loc, idx) => (
-              <li key={idx} className="flex items-center space-x-2">
-                <span className="text-emerald-400">»</span> <span>Ir a {loc}</span>
-              </li>
-            ))}
-            {/* Opción Banca Móvil siempre disponible según el motor */}
-            <li className="flex items-center space-x-2 mt-4 pt-4 border-t border-white/10">
-              <span className="text-sky-400">📱</span> <span>Opción: Banca Móvil</span>
-              {/* Un atajo para no caminar hasta una hitbox ficticia */}
-              <button onClick={() => resolverPromesa && resolverPromesa('p')} className="ml-auto text-xs bg-sky-700 px-2 py-1 flex-shrink-0 hover:bg-sky-600 rounded border border-white/20">Abrir</button>
-            </li>
-          </ul>
-        </div>
-      )}
-
       {/* DRAWER MAPA */}
       {showMapaImg && (
-        <div className="absolute top-36 right-4 z-50 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col pointer-events-auto">
-          <div className="flex justify-between items-center mb-2 px-2">
-            <h3 className="text-center font-pixel text-sky-300">Croquis de la Zona</h3>
-            <button onClick={() => setShowMapaImg(false)} className="text-slate-400 hover:text-white font-bold bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5 text-base leading-none">×</button>
-          </div>
-          <div className="flex-1 bg-slate-900 rounded border border-white/10 flex items-center justify-center overflow-hidden">
-            <img src={`${import.meta.env.BASE_URL}sprites/mapa_layout.png`} alt="Mapa" className="w-full h-full object-contain opacity-50" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = 'Sin textura'; }} />
+        <div className="absolute inset-0 z-50 pointer-events-auto" onClick={() => setShowMapaImg(false)}>
+          <div className="absolute top-48 right-4 w-80 h-80 bg-slate-800/95 border border-slate-600 rounded-xl p-2 text-white shadow-xl backdrop-blur flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-2 px-2">
+              <h3 className="text-center font-pixel text-sky-300">Croquis de la Zona</h3>
+              <button onClick={() => setShowMapaImg(false)} className="text-slate-400 hover:text-white font-bold bg-slate-700 hover:bg-slate-600 rounded px-2 py-0.5 text-base leading-none">×</button>
+            </div>
+            <div className="flex-1 bg-slate-900 rounded border border-white/10 flex items-center justify-center overflow-hidden">
+              <img src={`${import.meta.env.BASE_URL}sprites/mapa_layout.png`} alt="Mapa" className="w-full h-full object-contain opacity-50" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = 'Sin textura'; }} />
+            </div>
           </div>
         </div>
       )}
@@ -214,6 +241,19 @@ export default function MapaView() {
 
         <EscenarioMapa />
 
+        {/* INDICADORES DE MISION (Flechas flotantes) */}
+        {arrLocalizaciones.map((loc, idx) => {
+          let zona = null;
+          if (loc === 'RECAMARA' || loc === 'CASA') zona = ZONAS_MAPA['CASA'];
+          else if (loc === 'CASA_OFICINA' || loc === 'OFICINA') zona = ZONAS_MAPA['OFICINA'];
+          else zona = ZONAS_MAPA[loc];
+
+          if (zona) {
+            return <FlechaIndicador key={idx} position={[zona.x, 26, zona.z]} />;
+          }
+          return null;
+        })}
+
         {/* Las zonas activas ahora iteran sobre todas las posibles configuradas por ti */}
         <PersonajeController
           position={posicionPersonaje || [131, 1, 138]}
@@ -228,7 +268,7 @@ export default function MapaView() {
       </Canvas>
 
       {/* Controles de Movimiento - Joystick */}
-      <div className="absolute bottom-10 right-10 z-50 pointer-events-auto select-none opacity-80 hover:opacity-100 transition-opacity">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto select-none opacity-80 hover:opacity-100 transition-opacity drop-shadow-xl">
         <Joystick
           onChange={({ x, y }) => {
             setInputs(prev => ({

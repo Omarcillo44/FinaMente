@@ -5,6 +5,7 @@ import { useGameStore } from './store/gameStore';
 import InicioView from './components/views/InicioView';
 import CreditosView from './components/views/CreditosView';
 import SeleccionPersonajesView from './components/views/SeleccionPersonajesView';
+import VideoPersonajeView from './components/views/VideoPersonajeView';
 import SeleccionDificultadView from './components/views/SeleccionDificultadView';
 import MapaView from './components/views/MapaView';
 import BatallaView from './components/views/BatallaView';
@@ -21,6 +22,7 @@ export default function App() {
       case 'Inicio': return <InicioView />;
       case 'Creditos': return <CreditosView />;
       case 'SeleccionPersonajes': return <SeleccionPersonajesView />;
+      case 'VideoPersonaje': return <VideoPersonajeView />;
       case 'SeleccionDificultad': return <SeleccionDificultadView />;
       case 'Mapa': return <MapaView />;
       case 'Batalla': return <BatallaView />;
