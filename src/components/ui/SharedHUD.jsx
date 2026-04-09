@@ -11,7 +11,7 @@ export default function SharedHUD({ className = '' }) {
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center space-x-2 bg-black/50 px-3 py-1.5 rounded-lg border border-emerald-500/30">
           <span className="text-emerald-400">HP:</span>
-          <span className="font-pixel text-base md:text-xl lg:text-2xl">{headers?.hp ?? 100}</span>
+          <span className="font-pixel text-base md:text-xl lg:text-2xl">{Math.floor(headers?.hp ?? 100)}</span>
         </div>
         
         <div className="flex items-center space-x-4 bg-black/50 px-3 py-1.5 rounded-lg border border-white/10 text-gray-300">

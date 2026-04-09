@@ -6,7 +6,7 @@ const musicaFondo = new Audio(`${import.meta.env.BASE_URL}song/Legend_of_the_Kee
 
 // Configuraciones críticas
 musicaFondo.loop = true;  // Para que se repita infinitamente
-musicaFondo.volume = 0.4; // 40% de volumen (IMPORTANTE: para que no ensordezca a los jueces)
+musicaFondo.volume = 0.2; // 20% de volumen (IMPORTANTE: para que no ensordezca a los jueces)
 
 export const iniciarMusicaGlobal = () => {
   // El .catch() evita que la consola se llene de errores rojos 

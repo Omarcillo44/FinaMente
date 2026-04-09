@@ -7,6 +7,12 @@ export class ReactMotorAdapter {
 
     // Pausas
     async sleep(ms) {
+        if (useGameStore.getState().esperandoCierreResumen) {
+            return new Promise(resolve => {
+                // Guardamos el resolver directamente para que al llamarlo se desbloquee la promesa
+                useGameStore.getState().setResolverResumen(resolve);
+            });
+        }
         return new Promise(r => setTimeout(r, ms));
     }
 
@@ -104,8 +110,12 @@ export class ReactMotorAdapter {
     }
 
     mostrarCambioScore(mensaje, tipo, nuevoScore) {
-        // En un caso real podría no pausar toda la pantalla y usarse un Toast.
-        // Por ahora lo mandamos a Retroalimentacion
+        // Si estamos esperando el cierre del resumen, encolamos el mensaje
+        if (useGameStore.getState().esperandoCierreResumen) {
+            useGameStore.getState().addNotificacionPendiente({ mensaje, tipo, nuevoScore });
+            return;
+        }
+        
         if (mensaje) {
             useGameStore.getState().cambiarEscena('Retroalimentacion', { tipo: tipo || 'info', mensaje, score: nuevoScore });
         }
@@ -146,6 +156,8 @@ export class ReactMotorAdapter {
     }
 
     mostrarFinStage(stage, stats, esPerfilVistoso) {
+        useGameStore.getState().clearNotificacionesPendientes();
+        useGameStore.getState().setEsperandoCierreResumen(true);
         useGameStore.getState().cambiarEscena('ResumenStage', { stage, stats, esPerfilVistoso });
     }
 

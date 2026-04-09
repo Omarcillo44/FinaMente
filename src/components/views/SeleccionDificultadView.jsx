@@ -14,6 +14,10 @@ export default function SeleccionDificultadView() {
     // 2. Crear instancia pura del motor pasándole el adaptador
     const motor = new MotorJuego(adaptador);
 
+    // FIX: El motor llama internamente a realizarAbonoVoluntarioTDC() en el Stage 6,
+    // pero el método real se llama realizarOperacionesBancaMovil(). Aliaseamos para no tocar el motor.
+    motor.realizarAbonoVoluntarioTDC = motor.realizarOperacionesBancaMovil;
+
     // Conectar el callback nativo del motor para recolectar el JSON analítico de la API
     motor.onGameOver = async (datosJSON) => {
       useGameStore.getState().setHistorialIA(datosJSON);

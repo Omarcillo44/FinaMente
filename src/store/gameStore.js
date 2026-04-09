@@ -7,6 +7,9 @@ export const useGameStore = create((set, get) => ({
   datosPantalla: {},    
   headers: { hp: 100, saldoInsoluto: 0, efectivoDisponible: 0, stageActual: 1 },
   nombreJugador: 'Jugador 1',
+  notificacionesPendientes: [], // Cola de mensajes de score/limite durante el resumen
+  esperandoCierreResumen: false, // Flag para bloquear el motor en el sleep
+  resolverResumen: null,        // Función para desbloquear el motor
 
   cambiarEscena: (escena, datos = {}) => {
     set({ escenaActual: escena, datosPantalla: datos });
@@ -29,6 +32,13 @@ export const useGameStore = create((set, get) => ({
   setPersonajeSeleccionado: (nombre) => {
     set({ personajeSeleccionado: nombre });
   },
+
+  setEsperandoCierreResumen: (val) => set({ esperandoCierreResumen: val }),
+  setResolverResumen: (fn) => set({ resolverResumen: fn }),
+  addNotificacionPendiente: (msg) => set(state => ({ 
+    notificacionesPendientes: [...state.notificacionesPendientes, msg] 
+  })),
+  clearNotificacionesPendientes: () => set({ notificacionesPendientes: [] }),
 
   // === SISTEMA DE COLISIÓN Y MEMORIA DE MAPA ===
   posicionPersonaje: [131, 1, 137], // Spawn inicial recuperado
